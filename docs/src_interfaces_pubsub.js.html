@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/interfaces/pubsub.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/interfaces/pubsub.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Utils from "../helpers/utils";
+import {moduleS, subscriptions, eventQ} from "./store.js";
+
+/**
+ * @class
+ *
+ */
+class PubSub {
+	/**
+	 * Subscribes to the truss event
+	 * @param subscription {Object} the subscription object
+	 * @param [eventName = subscription.eventName]
+	 */
+    subscribe (subscription, eventName = subscription.eventName) {
+        if (!subscriptions[eventName]) subscriptions[eventName] = [];
+        let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+        subscriptions[eventName].push(subscriptionData);
+    };
+    /**
+     * Publishes a truss event
+     * @param eventName {string}
+     * @param message {string}
+     */
+    publish(eventName, message) {
+		let publisher = "";
+		if(arguments.length === 3){
+			publisher = arguments[0] || "";
+			eventName = arguments[1];
+			message = arguments[2];
+		} else {
+			publisher = Utils.getCSSSelector(this);
+		}
+		var subscriptionsForEvent = subscriptions[eventName],
+			remainingSubscriptions = [];
+
+		if(!subscriptionsForEvent){
+			return;
+		}
+
+        // If any of the subscription is of type Replay
+        // Push the message to eventQ
+        let replaySubscriptions = subscriptionsForEvent.filter((subs)=> {
+            if (subs.type === "RE_PLAY") return subs;
+        });
+        if (replaySubscriptions.length) eventQ.store.push({
+            eventName,
+            message,
+            publisher
+        });
+
+        subscriptionsForEvent &amp;&amp; subscriptionsForEvent.length &amp;&amp; subscriptionsForEvent.forEach(function (subscription) {
+
+            let callback = subscription.callback,
+                context = subscription.context,
+                subscribeOnce = subscription.once,
+                subscriptionMatched = false;
+
+
+            if (subscription.eventPublisher) {
+                let regex = new RegExp(subscription.eventPublisher + "$");
+                if (regex.test(publisher)) {
+                    subscriptionMatched = true;
+                } else {
+
+                    let actualPublisherHierarchy = publisher.split(' '),
+                        subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
+                        actualPublisherHierarchyLength = actualPublisherHierarchy.length,
+                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+
+                    while (actualPublisherHierarchy.length &amp;&amp; subscriptionPublisherHierarhcy.length) {
+
+                        actualPublisherHierarchyLength = actualPublisherHierarchy.length;
+                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+
+                        if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
+                            actualPublisherHierarchy.pop();
+                            subscriptionPublisherHierarhcy.pop();
+                        } else {
+                            actualPublisherHierarchy.pop();
+                        }
+                    }
+
+                    if (!subscriptionPublisherHierarhcy.length) {
+                        subscriptionMatched = true;
+                    }
+                }
+            }
+
+            if (!subscription.eventPublisher || subscriptionMatched) {
+
+                // If replay event: publish only after render is complete
+                // If replay event: publish all the data matched from event queue
+                let publishData = message;
+
+                if (subscription.type === "RE_PLAY") {
+                    publishData = eventQ.store.filter((evt)=> {
+                        if (evt.publisher === publisher &amp;&amp; evt.eventName === eventName) {
+                            return evt;
+                        }
+                    }).map((evt)=> {
+                        return evt.message;
+                    });
+                }
+
+                callback.call((context ? context : null), publishData);
+                if (!subscribeOnce) {
+                    remainingSubscriptions.push(subscription);
+                }
+            } else {
+                remainingSubscriptions.push(subscription);
+            }
+        });
+
+        subscriptions[eventName] = remainingSubscriptions;
+    };
+
+	/**
+	 * unsubscribes a truss event
+	 * @param subscriber {Object} the reference of the module which had subscribed the event earlier
+	 * @param eventName {string}
+	 * @param callback {function} the callback method to be unsubscribed
+	 */
+    unsubscribe(subscriber, eventName, callback) {
+
+        var subscriptionsForEvent = subscriptions[eventName];
+		if(!subscriptionsForEvent) {
+			return;
+		}
+
+        // Check if any RE_PLAY event is there and all the event context is of is same as
+        // destroy its data from eventQ
+        let replaySubscriptions = subscriptionsForEvent.filter((subscription)=>{
+            if(subscription.type === "RE_PLAY") return subscription;
+        });
+
+
+        subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
+            return !(subscription.callback === callback &amp;&amp; subscription.eventSubscriber === subscriber);
+        });
+
+
+        if(replaySubscriptions.length){
+
+            if(!subscriptions[eventName].length) {
+                // Remove all the items from eventQ with eventName
+                eventQ.store = eventQ.store.filter((evt)=>{
+                    if(evt.eventName !== eventName) return evt;
+                })
+            }
+        }
+    };
+}
+
+export default PubSub;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Module.html">Module</a></li><li><a href="module-src_interfaces_store.html">src/interfaces/store</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#addMethodsOnInstance">addMethodsOnInstance</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#iterateToAddMethodsOnInstance">iterateToAddMethodsOnInstance</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#Router">Router</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 05 2016 12:45:01 GMT+0530 (IST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

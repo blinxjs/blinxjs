@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/blinx.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/blinx.js</h1>
+
+
+
+
+
+
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**This is the major framework file.
+ * @exports {
+ * 	createInstance: creates a new instance of the module.
+ * 	destroyModuleInstance: destroys the module instance,
+ * 	use: use it if you want to extend Truss
+ *
+ * }
+ */
+
+import Utils from "./helpers/utils";
+import Module from "./interfaces/module.js";
+import {moduleS, middleWareFns} from "./interfaces/store";
+import CONSTANTS from "./constants";
+
+/**
+ *
+ * @param module [Object] Truss module
+ * @param eventName [string]
+ * @private
+ */
+let _onBreath = function (module, eventName) {
+
+	if (module[CONSTANTS.MODULE_EVENTS.onStatusChange]) {
+		module[CONSTANTS.MODULE_EVENTS.onStatusChange](eventName);
+	}
+};
+
+/**
+ * Publishes the event when state of the module changes
+ * @param moduleDetail [object] module
+ * @param eventName [string]
+ * @private
+ */
+let _emitLifeCycleEvent = function (moduleDetail, eventName) {
+
+	moduleDetail.publish(`${moduleDetail.getModuleName()}${eventName}`, {
+		moduleInstanceId: moduleDetail.getUniqueId()
+	});
+};
+
+/**
+ * This function resolves the Promise if initOn is true and module is already rendered. Refer {@link lifeCycleFlags} for
+ * initial lifecycle values.
+ * Calls {@link _callResolveRenderOn} if either case fails
+ * @param {Module} module. The module to be rendered.
+ * @returns {Promise}
+ * @private
+ */
+let _listenForInitOn = function (module) {
+
+	if (module.instanceConfig.initOn &amp;&amp; module.lifeCycleFlags.rendered) {
+
+		return Promise.resolve(module.path);
+	} else {
+
+		return _callResolveRenderOn(module);
+	}
+};
+
+// STEP:2
+/**
+ *
+ * @param {Module} module to be rendered.
+ * @param {*} data the data to be passed to module while initialization
+ * &lt;p>Calls {@link Module.resolveRenderOn} method . This method is passed from the config for the module and after
+ * resolveRenderOn is resolved, lifecycle status is changed to "preRenderResolved". The resolveRenderOn should return
+ * {Promise}&lt;/p>
+ * @private
+ */
+let _callResolveRenderOn = function (module, data) {
+
+	Module.createModuleArena(module);
+	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
+
+		let moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
+		if (moduleResoved instanceof Promise) {
+
+			return moduleResoved.then((res)=> {
+
+				module.lifeCycleFlags.preRenderResolved = true;
+				_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
+				return _lockEvents(module, res);
+			});
+		} else {
+
+			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
+			return _lockEvents(module, module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data));
+		}
+
+	} else {
+
+		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
+		return _lockEvents(module);
+	}
+
+};
+
+// STEP:3 [Hot events]
+/**
+ * Subscribes to all the events of type playAfterRender
+ * @param {Module} module to be rendered.
+ * @param placeholderResponse
+ * @private
+ */
+let _lockEvents = function (module, placeholderResponse) {
+
+	module.instanceConfig.listensTo &amp;&amp; module.instanceConfig.listensTo.length &amp;&amp; module.instanceConfig.listensTo.filter((evt)=> {
+
+		if (evt.type === CONSTANTS.EVENT_ENUM.playAfterRender || !evt.type) {
+
+			return evt;
+		}
+	}).forEach((listener) => {
+
+		module.subscribe({
+			eventName: listener.eventName,
+			callback: module[listener.callback],
+			context: module,
+			eventPublisher: listener.eventPublisher,
+			once: listener.once
+		});
+	});
+
+	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.listensToPlayAfterRenderSubscribed);
+	return _callRender(module, placeholderResponse);
+};
+
+// STEP:4
+/**
+ * &lt;p>Renders the module by calling {@link Module.createModuleArena}
+ * Changes the life cycle flag to rendered thereafter.&lt;/p>
+ * @param {Module} module to be rendered.
+ * @param placeholderResponse
+ * @returns {Promise}
+ * @private
+ */
+let _callRender = function (module, placeholderResponse) {
+
+	// if initOn is present exec below steps on initOn
+	// exec resolveRenderOn (if available)
+	// exec render after resolveRenderOn completes
+	// throw error is render and template are not provided
+	return new Promise((res, rej) => {
+		// Null to be replaced with resolveRenderOn data
+
+		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
+
+		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
+
+			module[CONSTANTS.MODULE_EVENTS.onRenderComplete]();
+			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
+		}
+
+		res(module.path, compiledHTML);
+		module.lifeCycleFlags.rendered = true;
+		_emitLifeCycleEvent(module, "_READY");
+	});
+};
+
+/**
+ *&lt;p>Called after the module is registered. Responsible for rendering the module.
+ * The rendering will wait till the event occurs if initOn option is provided. &lt;/p>
+ * &lt;p>This method contains four steps
+ * &lt;ul>
+ *     &lt;li>call resolveRenderOn method and wait for the promise to be resolved ({@link _callResolveRenderOn})&lt;/li>
+ *     &lt;li>subscribe to the events of type "playAfterRender"&lt;/li>
+ *     &lt;li>Render the module&lt;/li>
+ * &lt;/ul>
+ * &lt;/p>
+ *
+ * @recursive
+ * @param rootModules {Array} The array of modules to be rendered. Initially list is taken from {@link moduleS}
+ * @param promiseArr {Array} the array of promise objects
+ * @private
+ */
+let _startExec = function (patchModules, promiseArr) {
+
+	let rootModules = patchModules.filter((module) => {
+
+		return !module.meta.parent.id;
+	});
+
+	if (!rootModules.length) {
+
+		rootModules = [patchModules[0]];
+	}
+
+	rootModules.forEach((rootModule) => {
+
+		// Render this module
+		let moduleResolvePromise = new Promise(function (resolve, reject) {
+
+			_listenForInitOn(rootModule)
+				.then(() => {
+
+					resolve();
+					rootModule.meta.children &amp;&amp; rootModule.meta.children.forEach((module) => {
+
+						_startExec([module.pointer], promiseArr);
+					})
+				});
+		});
+
+		promiseArr.push(moduleResolvePromise);
+	});
+};
+
+/**
+ *
+ * @param module {Module} The Module generated by {@link _registerModule}. If the module listens to any event or if the
+ * module is instantiated based on an event then module is made to subscribe all the events.
+ * &lt;p>initOn will have following properties
+ * &lt;ul>
+ *     &lt;li>eventName {String} The name of the event&lt;/li>
+ *     &lt;li>eventPublisher {String} [Optional] CSS selector of the publisher of the event to which the module is subscribing.
+ *     The module listens to event from all the publishers if this field is not provided&lt;/li>
+ *     &lt;li>context {Object} [Optional] The context in which event is subscribed&lt;/li>
+ *     &lt;li>callback&lt;/li> {function} the callback method for the event
+ * &lt;/ul>
+ * &lt;/p>
+ * &lt;p>
+ * listensTo {array} this is an array of objects (the events) to which the module subscribes
+ * &lt;ul>
+ *     &lt;li>eventName {String} The name of the event&lt;/li>
+ *     &lt;li>eventPublisher {String} [Optional] CSS selector of the publisher of the event to which the module is subscribing.
+ *     The module listens to event from all the publishers if this field is not provided&lt;/li>
+ *     &lt;li>context {Object} [Optional] The context in which event is subscribed&lt;/li>
+ *     &lt;li>callback {function} the callback method for the event&lt;/li>
+ *     &lt;li>{boolean} [once = false] The callback of the function that can only be called one time if true. Repeated event publish
+ *     will have no effect.&lt;/li>
+ *     &lt;li>[type= "PLAY_AFTER_RENDER"] {EVENT_ENUM} the type of the event &lt;/li>
+ * &lt;/ul>
+ * &lt;/p>
+ * @returns {*}
+ * @private
+ */
+let _registerSubscription = function (module) {
+
+	module.instanceConfig.initOn &amp;&amp; module.subscribe({
+		eventName: module.instanceConfig.initOn.eventName,
+		eventPublisher: module.instanceConfig.initOn.eventPublisher,
+		context: module.instanceConfig,
+		callback: Utils.partial(_callResolveRenderOn, module)
+	});
+	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.initOnSubscribed);
+
+	module.instanceConfig.listensTo &amp;&amp;
+	module.instanceConfig.listensTo.length &amp;&amp;
+	module.instanceConfig.listensTo.filter((evt)=> {
+
+		if (evt.type === CONSTANTS.EVENT_ENUM.keepOn || evt.type === CONSTANTS.EVENT_ENUM.replay) {
+
+			return evt;
+		}
+	})
+		.forEach((listener) => {
+
+			module.subscribe({
+				eventName: listener.eventName,
+				callback: module[listener.callback],
+				context: module,
+				eventPublisher: listener.eventPublisher,
+				once: listener.once,
+				type: listener.type
+			});
+		});
+
+	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.keepOnReplaySubscribed);
+	return Promise.resolve(module.path);
+};
+
+/**
+ *
+ * @param config {Object} The configuration of the module to be created. Creates instance of {@link Module} and keeps it
+ * in {@link Store}.If the module has child modules then the child modules too will be registered.
+ * &lt;p>It must contain following properties
+ * &lt;ul style="list-style: none;">
+ * &lt;li>1. moduleName {String} The unique name in the workspace of the module
+ * &lt;li>2. module {Object}: It is the reference of module to be consumed
+ * &lt;li>3. instanceConfig {Object}: the configuration to be passed for that particular module. It must contain following
+ * properties:
+ *        &lt;ul>
+ *         &lt;li>placeholders {Object}
+ *         &lt;li>container {String} Css selector of the container element. This should be unique.
+ *         &lt;li>listensTo {Array} [Optional] the list of events that the module will listen to.
+ *         &lt;/ul>
+ * &lt;/ul>
+ * &lt;/p>
+ * &lt;p>If the module has already been registered on the same path then registration would be skipped and a warning will
+ * be generated.&lt;/p>
+ * &lt;p>&lt;/p>
+ * @param  {String} [moduleName = config.moduleName] The unique name in the workspace of the module
+ * @param {Object}[instance = config.module]
+ * @param {Object}[instanceConfig = config.instanceConfig]
+ * @param {String}[path=""]
+ * @private
+ */
+let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent &amp;&amp; parent.meta) {
+
+	let parentName = config.name ? config.name.split(".") : undefined,
+		foundModules;
+
+	if(instanceConfig.placeholders &amp;&amp; instance &amp;&amp; instance.config &amp;&amp; instance.config.placeholders){
+		instanceConfig.placeholders = Object.assign(instance.config.placeholders, instanceConfig.placeholders);
+	}
+
+	if (this instanceof Module) {
+
+		let parentId = this.getUniqueId();
+		foundModules = moduleS.filter((module) => {
+
+			return module.meta.id === parentId;
+		});
+	} else if (!parent &amp;&amp; parentName &amp;&amp; parentName.length === 2) {
+
+		foundModules = moduleS.filter((module) => {
+
+			return module.name === parentName[0];
+		});
+	}
+
+	if (foundModules &amp;&amp; foundModules.length) {
+
+		parent = foundModules[0];
+		parentMeta = parent.meta;
+	}
+
+	let meta = {
+		id: Utils.getNextUniqueId(),
+		parent: {
+			id: parentMeta &amp;&amp; parentMeta.id ? parentMeta.id : undefined,
+			pointer: parent
+		},
+		children: [],
+		siblings: parentMeta ? [].concat(parentMeta.children) : []
+	};
+
+	let moduleDetail = new Module(config.name, moduleName, CONSTANTS.lifeCycleFlags, instanceConfig, instance, meta);
+
+	_emitLifeCycleEvent(moduleDetail, "_CREATED");
+	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
+
+
+	// Store module
+	moduleS.insertInstance(moduleDetail);
+	patchModuleArray.push(moduleDetail);
+	_registerSubscription(moduleDetail);
+
+	if (parentMeta) {
+
+		meta.siblings = [].concat(parentMeta.children);
+		parentMeta.children.push({
+			id: meta.id,
+			pointer: moduleDetail
+		});
+	}
+
+	// Has child modules
+	if (instance.config &amp;&amp; instance.config.modules &amp;&amp; instance.config.modules.length) {
+
+		instance.config.modules.forEach((childModule) => {
+
+			_registerModule(childModule.moduleName, childModule, childModule.module, childModule.instanceConfig, patchModuleArray, moduleDetail);
+		});
+	} else {
+
+		return patchModuleArray;
+	}
+};
+
+/**
+ *
+ * Destroys the module . Does the following
+ * &lt;ul>
+ *     &lt;li>removed DOM element&lt;/li>
+ *     &lt;li> Unsubscribes events.It calls {@link Module.unsubscribe}&lt;/li>
+ *     &lt;li> Removes the entry of module from module store &lt;/li>
+ *     &lt;li> Removes the entry of child modules from module store &lt;/li>
+ * &lt;/ul>
+ * @param moduleName {string} The name of the module to be destroyed
+ * @param [context = window] {object} @todo . Reserved for future enhancement
+ * @returns {boolean} true when module gets deleted successfully
+ */
+export function destroyModuleInstance(module, context = window) {
+
+	/// Remove module DOM and unsubscribe its events
+	let moduleInstance;
+	if(typeof module === "string"){
+		moduleInstance = moduleS.findInstance(module);
+	} else if(module.meta){
+		moduleInstance = moduleS.findInstance(module.meta.id);
+	} else {
+		moduleInstance = moduleS.findInstance(null, module.name);
+	}
+
+	moduleInstance.forEach((module)=> {
+
+		//Call detroy of module
+		if(module[CONSTANTS.MODULE_EVENTS.destroy]){
+			module[CONSTANTS.MODULE_EVENTS.destroy]();
+		}
+
+		let container = context.document.querySelector(`#${module.getUniqueId()}`);
+
+		// Remove element from DOM
+		if(container){
+			container.remove();
+		}
+
+		// Remove all subscriptions
+		let moduleSubscriptions = module.getAllSubscriptions();
+		moduleSubscriptions.forEach(function (subscription) {
+			module.unsubscribe(subscription.eventName, subscription.callback);
+		});
+
+
+		if(module.meta.children &amp;&amp; module.meta.children.length){
+
+			let childPointers = module.meta.children.map((child)=>{
+				return child.pointer;
+			});
+
+			module.meta.children = [];
+
+			childPointers.forEach((childNode)=>{
+				destroyModuleInstance(childNode);
+			});
+		}
+
+		moduleS.deleteInstance(module.meta.id);
+	});
+
+	return true;
+}
+
+/**
+ *
+ * @param config {Object} The configuration of the module to be created. It must contain following properties
+ * &lt;ul style="list-style: none;">
+ * &lt;li>1. moduleName {String} The unique name in the workspace of the module
+ * &lt;li>2. module {Object}: It is the reference of module to be consumed
+ * &lt;li>3. instanceConfig: the configuration to be passed for that particular module. It must contain following properties:
+ *        &lt;ul>
+ *         &lt;li>placeholders {Object}
+ *         &lt;li>container {String} Css selector of the container element. This should be unique.
+ *         &lt;li>listensTo {Array} [Optional] the list of events that the module will listen to.
+ *         &lt;/ul>
+ *  &lt;li>4. resolveRenderOn: {function}&lt;/li>
+ * &lt;/ul>
+ * @returns {Promise} Resolves when all the modules are rendered.
+ */
+export function createInstance(config) {
+	let moduleResolvePromiseArr = [],
+		promise,
+		patchModules = [];
+
+	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
+	_startExec.call(this, patchModules, moduleResolvePromiseArr);
+
+	Utils.communicateToExtension(moduleS);
+
+	promise = new Promise((res, rej)=> {
+
+		Promise.all(moduleResolvePromiseArr).then(()=> {
+
+			res();
+		})
+	});
+
+	return promise;
+}
+
+
+export function use(middleware) {
+
+	middleWareFns.push(middleware);
+}
+
+export default {
+	createInstance,
+	destroyModuleInstance,
+	use
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Module.html">Module</a></li><li><a href="module-src_interfaces_store.html">src/interfaces/store</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#addMethodsOnInstance">addMethodsOnInstance</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#iterateToAddMethodsOnInstance">iterateToAddMethodsOnInstance</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#Router">Router</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 05 2016 12:45:01 GMT+0530 (IST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

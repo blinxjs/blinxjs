@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="6">
+
+  <testsuite name="index_spec"
+    errors="0" failures="0" hostname="" id="" package="index_spec" skipped="0"
+    tests="6" time="38.77" timestamp="Mon, 06 Jun 2016 16:46:01 GMT">
+  
+    <testcase name="Basic Truss Application Loads" time="4.883" assertions="8">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Truss initOn works" time="9.110" assertions="8">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Truss listensTo &#39;KEEP_ON&#39; works" time="6.406" assertions="9">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Truss listensTo &#39;PLAY_AFTER_RENDER&#39; works" time="6.449" assertions="9">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Truss listensTo &#39;REPLAY&#39; works" time="6.801" assertions="9">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Truss resolveRenderOn, onRenderCompelete &amp; destroy works" time="5.116" assertions="9">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    </testcase>
+  
+  
+  </testsuite>
+</testsuites>
