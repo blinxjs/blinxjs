@@ -20,7 +20,7 @@ export default {
 		resolveRenderOn: "resolveRenderOn",
 		render: "render",
 		onRenderComplete: "onRenderComplete",
-		onStatusChange: "onStatusChange",
+		onStatusChange: "__onStatusChange",
 		destroy: "destroy"
 	},
 

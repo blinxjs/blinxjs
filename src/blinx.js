@@ -70,21 +70,23 @@ let _listenForInitOn = function (module) {
 let _callResolveRenderOn = function (module, data) {
 
 	Module.createModuleArena(module);
+
 	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
 
 		let moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
 		if (moduleResoved instanceof Promise) {
 
-			return moduleResoved.then((res)=> {
-
+			let onPromiseComplete = (res)=> {
 				module.lifeCycleFlags.preRenderResolved = true;
 				_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 				return _lockEvents(module, res);
-			});
+			};
+
+			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
 		} else {
 
 			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
-			return _lockEvents(module, module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data));
+			return _lockEvents(module, moduleResoved);
 		}
 
 	} else {
@@ -92,7 +94,6 @@ let _callResolveRenderOn = function (module, data) {
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 		return _lockEvents(module, data);
 	}
-
 };
 
 // STEP:3 [Hot events]
@@ -152,7 +153,7 @@ let _callRender = function (module, placeholderResponse) {
 			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
 		}
 
-		res(module.path, compiledHTML);
+		res();
 		module.lifeCycleFlags.rendered = true;
 		_emitLifeCycleEvent(module, "_READY");
 	});
@@ -194,11 +195,13 @@ let _startExec = function (patchModules, promiseArr) {
 			_listenForInitOn(rootModule)
 				.then(() => {
 
-					resolve();
-					rootModule.meta.children && rootModule.meta.children.forEach((module) => {
+					if(rootModule.meta.children && rootModule.meta.children.length) {
+						rootModule.meta.children && rootModule.meta.children.forEach((module) => {
 
-						_startExec([module.pointer], promiseArr);
-					})
+							_startExec([module.pointer], promiseArr);
+						})
+					}
+					resolve(rootModule.meta.id);
 				});
 		});
 
@@ -267,7 +270,6 @@ let _registerSubscription = function (module) {
 		});
 
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.keepOnReplaySubscribed);
-	return Promise.resolve(module.path);
 };
 
 /**
@@ -396,7 +398,6 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  * @returns {boolean} true when module gets deleted successfully
  */
 export function destroyModuleInstance(module, context = window) {
-
 	/// Remove module DOM and unsubscribe its events
 	let moduleInstance;
 	if(typeof module === "string"){
@@ -463,42 +464,37 @@ export function destroyModuleInstance(module, context = window) {
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
 export function createInstance(config) {
+
+	if(!Utils.configValidator(config)) return;
+
+	let modulesToDestory = moduleS.filter((moduleInstance)=>{
+		return moduleInstance.instanceConfig.container === config.instanceConfig.container;
+	});
+
+	modulesToDestory.forEach((moduleInstance)=>{
+		destroyModuleInstance(moduleInstance);
+	});
+
 	let moduleResolvePromiseArr = [],
 		promise,
 		patchModules = [];
 
-	if(!config || !config.moduleName || !config.module || !config.instanceConfig) {
-		console.log("the config provided to create module instance in invalid!");
-        return;
-	}
-	if(!config.instanceConfig.container) {
-		console.log("the instance config provided to the module "+ config.moduleName+" is incorrect");
-        return;
-	}
 	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
 	_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
-	Utils.communicateToExtension(moduleS);
-
-	promise = new Promise((res, rej)=> {
-
-		Promise.all(moduleResolvePromiseArr).then(()=> {
-
-			res();
-		})
+	return new Promise((res, rej)=> {
+		Promise.all(moduleResolvePromiseArr).then(res).catch(rej)
 	});
-
-	return promise;
 }
 
 
 export function use(middleware) {
-
 	middleWareFns.push(middleware);
 }
 
 export default {
 	createInstance,
-	destroyModuleInstance,
+	destroyInstance: destroyModuleInstance,
+	destroyModuleInstance, // Deprecated
 	use
 };

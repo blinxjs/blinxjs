@@ -38,7 +38,7 @@ let Module = (function () {
 			this.lifeCycleFlags = lifeCycleFlags;
 			this.instanceConfig = instanceConfig;
 			this.modulePlaceholders = this.instanceConfig.placeholders;
-			this.createInstance = createInstance.bind(this);
+			this.createChildInstance = createInstance.bind(this);
 			this.meta = meta;
 
 			for (let key in instanceData) {

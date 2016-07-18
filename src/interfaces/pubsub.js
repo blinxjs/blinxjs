@@ -1,6 +1,27 @@
 import Utils from "../helpers/utils";
 import {moduleS, subscriptions, eventQ} from "./store.js";
 
+let subscribeLogger = function(eventName, subscription){
+	console.group("Event Subscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
+};
+
+let publishLogger = function(eventName, publishData){
+	console.group("Event Published");
+	console.info(eventName);
+	console.dirxml(publishData);
+	console.groupEnd();
+};
+
+let unsubscribeLogger = function(eventName, subscription){
+	console.group("Event UnSubscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
+};
+
 /**
  * @class
  *
@@ -15,6 +36,7 @@ class PubSub {
         if (!subscriptions[eventName]) subscriptions[eventName] = [];
         let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
         subscriptions[eventName].push(subscriptionData);
+		subscribeLogger(eventName, subscription);
     };
     /**
      * Publishes a blinx event
@@ -36,6 +58,13 @@ class PubSub {
 		if(!subscriptionsForEvent){
 			return;
 		}
+
+		publishLogger(eventName, {
+			eventName: eventName,
+			message: message,
+			publisher: publisher,
+			subscription: subscriptionsForEvent
+		});
 
         // If any of the subscription is of type Replay
         // Push the message to eventQ
@@ -138,6 +167,7 @@ class PubSub {
             return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
         });
 
+		unsubscribeLogger(eventName, subscriptionsForEvent);
 
         if(replaySubscriptions.length){
 
