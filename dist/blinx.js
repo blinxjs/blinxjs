@@ -76,6 +76,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	exports.default = {
 	  createInstance: _blinx.createInstance,
+	  destroyInstance: _blinx.destroyInstance,
 	  destroyModuleInstance: _blinx.destroyModuleInstance,
 	  use: _blinx.use
 	};
@@ -693,13 +694,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 		var moduleDetail = new _module2.default(config.name, moduleName, _constants2.default.lifeCycleFlags, instanceConfig, instance, meta);
 
-		_emitLifeCycleEvent(moduleDetail, "_CREATED");
-		_onBreath(moduleDetail, _constants2.default.onStatusChange_EVENTS.onCreate);
-
 		// Store module
 		_store.moduleS.insertInstance(moduleDetail);
 		patchModuleArray.push(moduleDetail);
 		_registerSubscription(moduleDetail);
+
+		_emitLifeCycleEvent(moduleDetail, "_CREATED");
+		_onBreath(moduleDetail, _constants2.default.onStatusChange_EVENTS.onCreate);
 
 		if (parentMeta) {
 

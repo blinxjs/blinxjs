@@ -353,14 +353,13 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 
 	let moduleDetail = new Module(config.name, moduleName, CONSTANTS.lifeCycleFlags, instanceConfig, instance, meta);
 
-	_emitLifeCycleEvent(moduleDetail, "_CREATED");
-	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
-
-
 	// Store module
 	moduleS.insertInstance(moduleDetail);
 	patchModuleArray.push(moduleDetail);
 	_registerSubscription(moduleDetail);
+
+	_emitLifeCycleEvent(moduleDetail, "_CREATED");
+	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
 
 	if (parentMeta) {
 
