@@ -132,15 +132,13 @@ class PubSub {
                 }
 
                 callback.call((context ? context : null), publishData);
-                if (!subscribeOnce) {
-                    remainingSubscriptions.push(subscription);
-                }
-            } else {
-                remainingSubscriptions.push(subscription);
+				if (subscribeOnce) {
+					subscriptions[eventName] = subscriptions[eventName].filter(function(sub){
+						return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)
+					});
+				}
             }
         });
-
-        subscriptions[eventName] = remainingSubscriptions;
     };
 
 	/**

@@ -317,6 +317,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+	exports.destroyInstance = undefined;
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**This is the major framework file.
 	                                                                                                                                                                                                                                                                   * @exports {
@@ -832,9 +833,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		_store.middleWareFns.push(middleware);
 	}
 
+	var destroyInstance = exports.destroyInstance = destroyModuleInstance;
+
 	exports.default = {
 		createInstance: createInstance,
-		destroyInstance: destroyModuleInstance,
+		destroyInstance: destroyInstance,
 		destroyModuleInstance: destroyModuleInstance, // Deprecated
 		use: use
 	};
@@ -1004,15 +1007,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 
 	                    callback.call(context ? context : null, publishData);
-	                    if (!subscribeOnce) {
-	                        remainingSubscriptions.push(subscription);
+	                    if (subscribeOnce) {
+	                        _store.subscriptions[eventName] = _store.subscriptions[eventName].filter(function (sub) {
+	                            return sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName;
+	                        });
 	                    }
-	                } else {
-	                    remainingSubscriptions.push(subscription);
 	                }
 	            });
-
-	            _store.subscriptions[eventName] = remainingSubscriptions;
 	        }
 	    }, {
 	        key: "unsubscribe",

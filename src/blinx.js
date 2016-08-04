@@ -491,9 +491,11 @@ export function use(middleware) {
 	middleWareFns.push(middleware);
 }
 
+export let destroyInstance = destroyModuleInstance;
+
 export default {
 	createInstance,
-	destroyInstance: destroyModuleInstance,
+	destroyInstance,
 	destroyModuleInstance, // Deprecated
 	use
 };
