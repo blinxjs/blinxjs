@@ -8,6 +8,7 @@
  */
 
 import Utils from "./helpers/utils";
+import _ from "./helpers/lodash.custom";
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
@@ -74,7 +75,7 @@ let _callResolveRenderOn = function (module, data) {
 	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
 
 		let moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
-		if (moduleResoved instanceof Promise) {
+		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === "function") {
 
 			let onPromiseComplete = (res)=> {
 				module.lifeCycleFlags.preRenderResolved = true;
@@ -317,7 +318,7 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 	}
 
 	if(instanceConfig.placeholders && instance && instance.config && instance.config.placeholders){
-		instanceConfig.placeholders = Object.assign(instance.config.placeholders, instanceConfig.placeholders);
+		instanceConfig.placeholders = _.merge(instance.config.placeholders, instanceConfig.placeholders);
 	}
 
 	if (this instanceof Module) {
@@ -463,6 +464,7 @@ export function destroyModuleInstance(module, context = window) {
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
 export function createInstance(config) {
+	config = _.merge({}, config);
 
 	if(!Utils.configValidator(config)) return;
 
