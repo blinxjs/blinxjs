@@ -158,9 +158,6 @@ let _callRender = function (module, placeholderResponse) {
 
 		res();
 
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
-
 		let moduleSubscriptions = module.getAllSubscriptions();
 		eventQ.store.forEach((evt)=> {
 			let queuedEvent = moduleSubscriptions.filter((event)=> {
