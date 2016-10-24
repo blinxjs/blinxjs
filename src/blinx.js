@@ -49,7 +49,7 @@ let _emitLifeCycleEvent = function (moduleDetail, eventName) {
  */
 let _listenForInitOn = function (module) {
 
-	if (module.instanceConfig.initOn && module.lifeCycleFlags.rendered) {
+	if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
 
 		return Promise.resolve(module.path);
 	} else {
@@ -146,6 +146,9 @@ let _callRender = function (module, placeholderResponse) {
 		// Null to be replaced with resolveRenderOn data
 
 		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+		module.lifeCycleFlags.rendered = true;
+		_emitLifeCycleEvent(module, "_READY");
+
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
@@ -155,8 +158,6 @@ let _callRender = function (module, placeholderResponse) {
 		}
 
 		res();
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
 	});
 };
 
@@ -198,8 +199,9 @@ let _startExec = function (patchModules, promiseArr) {
 
 					if(rootModule.meta.children && rootModule.meta.children.length) {
 						rootModule.meta.children && rootModule.meta.children.forEach((module) => {
-
+							if(!module.pointer.lifeCycleFlags.rendered) {
 							_startExec([module.pointer], promiseArr);
+							}
 						})
 					}
 					resolve(rootModule.meta.id);
