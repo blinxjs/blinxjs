@@ -66,16 +66,17 @@ class PubSub {
 			subscription: subscriptionsForEvent
 		});
 
-        // If any of the subscription is of type Replay
+        // If any of the subscription is of type Replay and not rendered
         // Push the message to eventQ
-        let replaySubscriptions = subscriptionsForEvent.filter((subs)=> {
-            if (subs.type === "RE_PLAY") return subs;
-        });
-        if (replaySubscriptions.length) eventQ.store.push({
-            eventName,
-            message,
-            publisher
-        });
+		let replaySubscriptions = subscriptionsForEvent.filter((subs)=> {
+			if (subs.type === "RE_PLAY" /*&& subs.context.lifeCycleFlags.rendered == false*/) return subs;
+		});
+
+		if (replaySubscriptions.length) eventQ.store.push({
+			eventName,
+			message,
+			publisher
+		});
 
         subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
 
@@ -117,21 +118,12 @@ class PubSub {
 
             if (!subscription.eventPublisher || subscriptionMatched) {
 
-                // If replay event: publish only after render is complete
-                // If replay event: publish all the data matched from event queue
                 let publishData = message;
 
-                if (subscription.type === "RE_PLAY") {
-                    publishData = eventQ.store.filter((evt)=> {
-                        if (evt.publisher === publisher && evt.eventName === eventName) {
-                            return evt;
-                        }
-                    }).map((evt)=> {
-                        return evt.message;
-                    });
-                }
+				if( (context.lifeCycleFlags &&  context.lifeCycleFlags.rendered == true ) || ( context.initOn && context.initOn.eventName == eventName ) ){
+					callback.call((context ? context : null), publishData);
+				}
 
-                callback.call((context ? context : null), publishData);
 				if (subscribeOnce) {
 					subscriptions[eventName] = subscriptions[eventName].filter(function(sub){
 						return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)

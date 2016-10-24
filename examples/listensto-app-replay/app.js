@@ -23,10 +23,3 @@ Blinx.createInstance({
 	},
 	"module": RootInstance
 });
-
-
-setTimeout(()=> {
-	Blinx.destroyModuleInstance({
-		name: "contentModule"
-	});
-}, 7000);

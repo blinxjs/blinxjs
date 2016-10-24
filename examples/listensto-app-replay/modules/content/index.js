@@ -7,13 +7,8 @@ export default {
 
         if(list) {
             let html = "";
-            if(dateArr.length){
-                html = dateArr.map((time)=>{
-                    return `<li>${time}</li>`
-                }).join("");
-            }
-
-            list.innerHTML = html;
+			html = "<li>"+dateArr+"</li>";
+            list.innerHTML = list.innerHTML+""+html;
         }
     },
     template,
