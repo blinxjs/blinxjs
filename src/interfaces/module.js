@@ -1,5 +1,5 @@
 import Utils from "../helpers/utils";
-import {moduleS, middleWareFns} from "./store";
+import {moduleS, middleWareFns, eventQ} from "./store";
 import PubSub from "./pubsub";
 import {createInstance} from "../blinx";
 
@@ -121,6 +121,20 @@ let Module = (function () {
 
 		publish(eventName, message) {
 			super.publish(eventName, message);
+		};
+
+		dequeueEvents(){
+			let moduleSubscriptions = this.getAllSubscriptions();
+			eventQ.store.forEach((evt)=> {
+				let queuedEvent = moduleSubscriptions.filter((event)=> {
+					if (evt.eventName === event.eventName && event.type === "RE_PLAY") {
+						return event;
+					}
+				});
+				queuedEvent.forEach((event) => {
+					event.callback && event.callback.call((event.context ? event.context : null), evt.message);
+				});
+			});
 		};
 
 		unsubscribe(eventName, callback) {

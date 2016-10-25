@@ -10,7 +10,7 @@
 import Utils from "./helpers/utils";
 import _ from "./helpers/lodash.custom";
 import Module from "./interfaces/module.js";
-import {moduleS, middleWareFns, eventQ} from "./interfaces/store";
+import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
 
 /**
@@ -161,18 +161,8 @@ let _callRender = function (module, placeholderResponse) {
 		module.lifeCycleFlags.rendered = true;
 		_emitLifeCycleEvent(module, "_READY");
 
-		let moduleSubscriptions = module.getAllSubscriptions();
-		eventQ.store.forEach((evt)=> {
-			let queuedEvent = moduleSubscriptions.filter((event)=> {
-				if (evt.eventName === event.eventName && event.type === "RE_PLAY") {
-					return event;
-				}
-			});
-			queuedEvent.forEach((event) => {
-				event.callback && event.callback.call((event.context ? event.context : null), evt.message);
-			});
-		});
-
+		// If there are any queued events , dequeue the events based on modules subscriptions
+		module.dequeueEvents();
 	});
 };
 

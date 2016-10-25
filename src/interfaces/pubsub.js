@@ -121,7 +121,7 @@ class PubSub {
                 // If replay event: publish all the data matched from event queue
                 let publishData = message;
 
-				if( (context.lifeCycleFlags &&  context.lifeCycleFlags.rendered == true ) || ( context.initOn && context.initOn.eventName == eventName ) ){
+				if( (context.lifeCycleFlags &&  context.lifeCycleFlags.rendered == true ) || ( context.initOn && context.initOn.eventName == eventName ) || subscription.type == "KEEP_ON" ){
 					callback.call((context ? context : null), publishData);
 				}
 
