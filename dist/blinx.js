@@ -387,7 +387,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var _listenForInitOn = function _listenForInitOn(module) {
 
-		if (module.instanceConfig.initOn && module.lifeCycleFlags.rendered) {
+		if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
 
 			return Promise.resolve(module.path);
 		} else {
@@ -483,6 +483,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			// Null to be replaced with resolveRenderOn data
 
 			var compiledHTML = module[_constants2.default.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+			module.lifeCycleFlags.rendered = true;
+			_emitLifeCycleEvent(module, "_READY");
+
 			_onBreath(module, _constants2.default.onStatusChange_EVENTS.renderCalled);
 
 			if (module[_constants2.default.MODULE_EVENTS.onRenderComplete]) {
@@ -492,8 +495,6 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 
 			res();
-			module.lifeCycleFlags.rendered = true;
-			_emitLifeCycleEvent(module, "_READY");
 		});
 	};
 
@@ -534,8 +535,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 					if (rootModule.meta.children && rootModule.meta.children.length) {
 						rootModule.meta.children && rootModule.meta.children.forEach(function (module) {
-
-							_startExec([module.pointer], promiseArr);
+							if (!module.pointer.lifeCycleFlags.rendered) {
+								_startExec([module.pointer], promiseArr);
+							}
 						});
 					}
 					resolve(rootModule.meta.id);
@@ -3563,7 +3565,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				_this.moduleName = moduleName;
 				_this.name = name;
 				// this.path = path;
-				_this.lifeCycleFlags = lifeCycleFlags;
+				_this.lifeCycleFlags = _extends({}, lifeCycleFlags);
 				_this.instanceConfig = instanceConfig;
 				_this.modulePlaceholders = _this.instanceConfig.placeholders;
 				_this.createChildInstance = _blinx.createInstance.bind(_this);
