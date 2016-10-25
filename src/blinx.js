@@ -158,9 +158,6 @@ let _callRender = function (module, placeholderResponse) {
 
 		res();
 
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
-
 		// If there are any queued events , dequeue the events based on modules subscriptions
 		module.dequeueEvents();
 	});
