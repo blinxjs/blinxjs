@@ -167,7 +167,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            while (tempParent) {
 	                cssSelector = tempParent.instanceConfig.container + " " + cssSelector;
-	                tempParent = tempParent.parent && tempParent.parent.pointer ? tempParent.parent.pointer.meta.id : undefined;
+	                tempParent = tempParent.meta.parent && tempParent.meta.parent.pointer ? tempParent.meta.parent.pointer : undefined;
 	            }
 
 	            return cssSelector;
@@ -334,7 +334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _module2 = _interopRequireDefault(_module);
 
-	var _store = __webpack_require__(2);
+	var _store2 = __webpack_require__(2);
 
 	var _constants = __webpack_require__(5);
 
@@ -645,6 +645,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		var parentMeta = arguments.length <= 6 || arguments[6] === undefined ? parent && parent.meta : arguments[6];
 
 
+		if (typeof parent === "string") {
+			parent = _store.moduleS.find(function (module) {
+
+				return module.name === parent;
+			});
+			parentMeta = parent && parent.meta;
+		}
+
 		var parentName = config.name ? config.name.split(".") : undefined,
 		    foundModules = void 0;
 
@@ -669,14 +677,14 @@ return /******/ (function(modules) { // webpackBootstrap
 			(function () {
 
 				var parentId = _this.getUniqueId();
-				foundModules = _store.moduleS.filter(function (module) {
+				foundModules = _store2.moduleS.filter(function (module) {
 
 					return module.meta.id === parentId;
 				});
 			})();
 		} else if (!parent && parentName && parentName.length === 2) {
 
-			foundModules = _store.moduleS.filter(function (module) {
+			foundModules = _store2.moduleS.filter(function (module) {
 
 				return module.name === parentName[0];
 			});
@@ -701,7 +709,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var moduleDetail = new _module2.default(config.name, moduleName, _constants2.default.lifeCycleFlags, instanceConfig, instance, meta);
 
 		// Store module
-		_store.moduleS.insertInstance(moduleDetail);
+		_store2.moduleS.insertInstance(moduleDetail);
 		patchModuleArray.push(moduleDetail);
 		_registerSubscription(moduleDetail);
 
@@ -749,11 +757,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		/// Remove module DOM and unsubscribe its events
 		var moduleInstance = void 0;
 		if (typeof module === "string") {
-			moduleInstance = _store.moduleS.findInstance(module);
+			moduleInstance = _store2.moduleS.findInstance(module);
 		} else if (module.meta) {
-			moduleInstance = _store.moduleS.findInstance(module.meta.id);
+			moduleInstance = _store2.moduleS.findInstance(module.meta.id);
 		} else {
-			moduleInstance = _store.moduleS.findInstance(null, module.name);
+			moduleInstance = _store2.moduleS.findInstance(null, module.name);
 		}
 
 		moduleInstance.forEach(function (module) {
@@ -789,7 +797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				});
 			}
 
-			_store.moduleS.deleteInstance(module.meta.id);
+			_store2.moduleS.deleteInstance(module.meta.id);
 		});
 
 		return true;
@@ -810,12 +818,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * </ul>
 	 * @returns {Promise|undefined} Resolves when all the modules are rendered.
 	 */
-	function createInstance(config) {
+	function createInstance(config, parentName) {
 		config = _lodash2.default.merge({}, config);
 
 		if (!_utils2.default.configValidator(config)) return;
 
-		var modulesToDestory = _store.moduleS.filter(function (moduleInstance) {
+		var modulesToDestory = _store2.moduleS.filter(function (moduleInstance) {
 			return moduleInstance.instanceConfig.container === config.instanceConfig.container;
 		});
 
@@ -827,7 +835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		    promise = void 0,
 		    patchModules = [];
 
-		_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
+		_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
 		_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
 		return new Promise(function (res, rej) {
@@ -836,7 +844,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function use(middleware) {
-		_store.middleWareFns.push(middleware);
+		_store2.middleWareFns.push(middleware);
 	}
 
 	var destroyInstance = exports.destroyInstance = destroyModuleInstance;

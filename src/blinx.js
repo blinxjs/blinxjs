@@ -303,6 +303,14 @@ let _registerSubscription = function (module) {
  */
 let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent && parent.meta) {
 
+	if(typeof parent === "string"){
+		parent = _store.moduleS.find(function (module) {
+
+			return module.name === parent;
+		});
+		parentMeta = parent && parent.meta;
+	}
+
 	let parentName = config.name ? config.name.split(".") : undefined,
 		foundModules;
 
@@ -465,7 +473,7 @@ export function destroyModuleInstance(module, context = window) {
  * </ul>
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
-export function createInstance(config) {
+export function createInstance(config, parentName) {
 	config = _.merge({}, config);
 
 	if(!Utils.configValidator(config)) return;
@@ -482,7 +490,7 @@ export function createInstance(config) {
 		promise,
 		patchModules = [];
 
-	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
+	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
 	_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
 	return new Promise((res, rej)=> {
