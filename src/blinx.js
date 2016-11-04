@@ -306,7 +306,7 @@ let _registerSubscription = function (module) {
 let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent && parent.meta) {
 
 	if(typeof parent === "string"){
-		parent = _store.moduleS.find(function (module) {
+		parent = moduleS.find(function (module) {
 
 			return module.name === parent;
 		});
