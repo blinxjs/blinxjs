@@ -123,6 +123,8 @@ class PubSub {
 
 				if( (context && context.lifeCycleFlags &&  context.lifeCycleFlags.rendered == true ) || ( context && context.initOn && context.initOn.eventName == eventName ) || subscription.type == "KEEP_ON" ){
 					callback.call((context ? context : null), publishData);
+				} else if(!context){
+					callback.call(null, publishData);
 				}
 
 				if (subscribeOnce) {
