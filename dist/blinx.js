@@ -485,7 +485,6 @@ return /******/ (function(modules) { // webpackBootstrap
 			var compiledHTML = module[_constants2.default.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
 			module.lifeCycleFlags.rendered = true;
 			_emitLifeCycleEvent(module, "_READY");
-
 			_onBreath(module, _constants2.default.onStatusChange_EVENTS.renderCalled);
 
 			if (module[_constants2.default.MODULE_EVENTS.onRenderComplete]) {
@@ -495,6 +494,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 
 			res();
+
+			// If there are any queued events , dequeue the events based on modules subscriptions
+			module.dequeueEvents();
 		});
 	};
 
@@ -1010,17 +1012,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // If replay event: publish all the data matched from event queue
 	                    var publishData = message;
 
-	                    if (subscription.type === "RE_PLAY") {
-	                        publishData = _store.eventQ.store.filter(function (evt) {
-	                            if (evt.publisher === publisher && evt.eventName === eventName) {
-	                                return evt;
-	                            }
-	                        }).map(function (evt) {
-	                            return evt.message;
-	                        });
+	                    if (context.lifeCycleFlags && context.lifeCycleFlags.rendered == true || context.initOn && context.initOn.eventName == eventName || subscription.type == "KEEP_ON") {
+	                        callback.call(context ? context : null, publishData);
 	                    }
 
-	                    callback.call(context ? context : null, publishData);
 	                    if (subscribeOnce) {
 	                        _store.subscriptions[eventName] = _store.subscriptions[eventName].filter(function (sub) {
 	                            return sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName;
@@ -3680,6 +3675,21 @@ return /******/ (function(modules) { // webpackBootstrap
 				key: "publish",
 				value: function publish(eventName, message) {
 					_get(Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
+				}
+			}, {
+				key: "dequeueEvents",
+				value: function dequeueEvents() {
+					var moduleSubscriptions = this.getAllSubscriptions();
+					_store.eventQ.store.forEach(function (evt) {
+						var queuedEvent = moduleSubscriptions.filter(function (event) {
+							if (evt.eventName === event.eventName && event.type === "RE_PLAY") {
+								return event;
+							}
+						});
+						queuedEvent.forEach(function (event) {
+							event.callback && event.callback.call(event.context ? event.context : null, evt.message);
+						});
+					});
 				}
 			}, {
 				key: "unsubscribe",
