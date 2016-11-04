@@ -121,17 +121,10 @@ class PubSub {
                 // If replay event: publish all the data matched from event queue
                 let publishData = message;
 
-                if (subscription.type === "RE_PLAY") {
-                    publishData = eventQ.store.filter((evt)=> {
-                        if (evt.publisher === publisher && evt.eventName === eventName) {
-                            return evt;
-                        }
-                    }).map((evt)=> {
-                        return evt.message;
-                    });
-                }
+				if( (context.lifeCycleFlags &&  context.lifeCycleFlags.rendered == true ) || ( context.initOn && context.initOn.eventName == eventName ) || subscription.type == "KEEP_ON" ){
+					callback.call((context ? context : null), publishData);
+				}
 
-                callback.call((context ? context : null), publishData);
 				if (subscribeOnce) {
 					subscriptions[eventName] = subscriptions[eventName].filter(function(sub){
 						return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)

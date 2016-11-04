@@ -148,7 +148,6 @@ let _callRender = function (module, placeholderResponse) {
 		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
 		module.lifeCycleFlags.rendered = true;
 		_emitLifeCycleEvent(module, "_READY");
-
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
@@ -158,6 +157,9 @@ let _callRender = function (module, placeholderResponse) {
 		}
 
 		res();
+
+		// If there are any queued events , dequeue the events based on modules subscriptions
+		module.dequeueEvents();
 	});
 };
 
@@ -200,7 +202,7 @@ let _startExec = function (patchModules, promiseArr) {
 					if(rootModule.meta.children && rootModule.meta.children.length) {
 						rootModule.meta.children && rootModule.meta.children.forEach((module) => {
 							if(!module.pointer.lifeCycleFlags.rendered) {
-							_startExec([module.pointer], promiseArr);
+								_startExec([module.pointer], promiseArr);
 							}
 						})
 					}
