@@ -1012,7 +1012,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    // If replay event: publish all the data matched from event queue
 	                    var publishData = message;
 
-	                    if (context && context.lifeCycleFlags && context.lifeCycleFlags.rendered == true || context.initOn && context.initOn.eventName == eventName || subscription.type == "KEEP_ON") {
+	                    if (context && context.lifeCycleFlags && context.lifeCycleFlags.rendered == true || context && context.initOn && context.initOn.eventName == eventName || subscription.type == "KEEP_ON") {
 	                        callback.call(context ? context : null, publishData);
 	                    }
 
