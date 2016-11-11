@@ -18,7 +18,7 @@ function charsRightIndex(string, chars) {
 export default {
 
     getNextUniqueId:  function () {
-        return 'UIF-' + (++uniqueIdsTill);
+        return 'blinx-wrapper-' + (++uniqueIdsTill);
     },
 
     pick: function (obj, arr) {
