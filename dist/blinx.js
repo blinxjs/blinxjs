@@ -91,7 +91,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var uniqueIdsTill = -1;
 
@@ -113,7 +113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = {
 
 	    getNextUniqueId: function getNextUniqueId() {
-	        return 'UIF-' + ++uniqueIdsTill;
+	        return 'blinx-wrapper-' + ++uniqueIdsTill;
 	    },
 
 	    pick: function pick(obj, arr) {
@@ -637,14 +637,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	var _registerModule = function _registerModule(moduleName, config) {
-		var instance = arguments.length <= 2 || arguments[2] === undefined ? config.module : arguments[2];
-		var instanceConfig = arguments.length <= 3 || arguments[3] === undefined ? config.instanceConfig : arguments[3];
-		var patchModuleArray = arguments.length <= 4 || arguments[4] === undefined ? [] : arguments[4];
+		var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
+		var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
+		var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
 
 		var _this = this;
 
 		var parent = arguments[5];
-		var parentMeta = arguments.length <= 6 || arguments[6] === undefined ? parent && parent.meta : arguments[6];
+		var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
 
 
 		if (typeof parent === "string") {
@@ -754,7 +754,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} true when module gets deleted successfully
 	 */
 	function destroyModuleInstance(module) {
-		var context = arguments.length <= 1 || arguments[1] === undefined ? window : arguments[1];
+		var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
 
 		/// Remove module DOM and unsubscribe its events
 		var moduleInstance = void 0;
@@ -920,7 +920,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	         * @param [eventName = subscription.eventName]
 	         */
 	        value: function subscribe(subscription) {
-	            var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
+	            var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
 
 	            if (!_store.subscriptions[eventName]) _store.subscriptions[eventName] = [];
 	            var subscriptionData = _utils2.default.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
@@ -1139,7 +1139,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/* WEBPACK VAR INJECTION */(function(global, module) {'use strict';
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	/**
 	 * @license
@@ -3503,7 +3503,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -3555,13 +3555,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param instanceConfig the configuration of the module passed
 	   * @param instanceData It is the reference of module
 	   */
-
 			function Module(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
 				_classCallCheck(this, Module);
 
 				// Apply middleware, PRE:_Create
-
-				var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Module).call(this));
+				var _this = _possibleConstructorReturn(this, (Module.__proto__ || Object.getPrototypeOf(Module)).call(this));
 
 				_store.middleWareFns.forEach(function (middlewareFn) {
 					_extends(_this, middlewareFn(_this));
@@ -3667,16 +3665,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			}, {
 				key: "subscribe",
 				value: function subscribe(subscription) {
-					var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
+					var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
 
 					subscription.eventSubscriber = this.getModuleContainer();
 					modulePrivateData.get(this).moduleSubscriptions.push(subscription);
-					_get(Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
+					_get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
 				}
 			}, {
 				key: "publish",
 				value: function publish(eventName, message) {
-					_get(Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
+					_get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
 				}
 			}, {
 				key: "dequeueEvents",
@@ -3700,7 +3698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						callback = eventName.callback;
 						eventName = eventName.eventName;
 					}
-					_get(Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
+					_get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
 				}
 			}], [{
 				key: "createModuleArena",
