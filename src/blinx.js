@@ -249,7 +249,8 @@ let _registerSubscription = function (module) {
 		eventName: module.instanceConfig.initOn.eventName,
 		eventPublisher: module.instanceConfig.initOn.eventPublisher,
 		context: module.instanceConfig,
-		callback: Utils.partial(_callResolveRenderOn, module)
+		callback: Utils.partial(_callResolveRenderOn, module),
+		once: true
 	});
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.initOnSubscribed);
 

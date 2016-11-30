@@ -2122,7 +2122,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			eventName: module.instanceConfig.initOn.eventName,
 			eventPublisher: module.instanceConfig.initOn.eventPublisher,
 			context: module.instanceConfig,
-			callback: _utils2.default.partial(_callResolveRenderOn, module)
+			callback: _utils2.default.partial(_callResolveRenderOn, module),
+			once: true
 		});
 		_onBreath(module, _constants2.default.onStatusChange_EVENTS.initOnSubscribed);
 
