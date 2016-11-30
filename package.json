@@ -43,5 +43,8 @@
     "jsdoc": "3.4.0",
     "nightwatch": "0.8.18",
     "webpack": "1.13.0"
+  },
+  "dependencies": {
+    "lodash": "4.17.2"
   }
 }

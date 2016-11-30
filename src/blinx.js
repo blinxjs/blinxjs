@@ -8,7 +8,7 @@
  */
 
 import Utils from "./helpers/utils";
-import _ from "./helpers/lodash.custom";
+import merge from 'lodash/fp/merge';
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
@@ -330,7 +330,7 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 	}
 
 	if(instanceConfig.placeholders && instance && instance.config && instance.config.placeholders){
-		instanceConfig.placeholders = _.merge(instance.config.placeholders, instanceConfig.placeholders);
+		instanceConfig.placeholders = merge(instance.config.placeholders, instanceConfig.placeholders);
 	}
 
 	if (this instanceof Module) {
@@ -432,6 +432,7 @@ export function destroyModuleInstance(module, context = window) {
 		// Remove element from DOM
 		if(container){
 			container.remove();
+			container = null;
 		}
 
 		// Remove all subscriptions
@@ -476,7 +477,7 @@ export function destroyModuleInstance(module, context = window) {
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
 export function createInstance(config, parentName) {
-	config = _.merge({}, config);
+	config = merge({}, config);
 
 	if(!Utils.configValidator(config)) return;
 
