@@ -412,6 +412,14 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  */
 export function destroyModuleInstance(module, context = window) {
 	/// Remove module DOM and unsubscribe its events
+	if(Array.isArray(module)) {
+		let status = [];
+		module.forEach(function(singleModule) {
+			status.push(destroyModuleInstance(singleModule));
+		});
+		return status;
+	}
+
 	let moduleInstance;
 	if(typeof module === "string"){
 		moduleInstance = moduleS.findInstance(module);

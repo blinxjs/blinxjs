@@ -84,6 +84,11 @@ class PubSub {
                 subscribeOnce = subscription.once,
                 subscriptionMatched = false;
 
+			if(!callback || typeof callback !== "function") {
+				console.error("The callback for the event is invalid");
+				return;
+			}
+
 
             if (subscription.eventPublisher) {
                 let regex = new RegExp(subscription.eventPublisher + "$");
