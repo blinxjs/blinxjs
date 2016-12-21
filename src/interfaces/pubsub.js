@@ -2,24 +2,51 @@ import Utils from "../helpers/utils";
 import { moduleS, subscriptions, eventQ } from "./store.js";
 
 let subscribeLogger = function (eventName, subscription) {
-    console.group("Event Subscribed");
-    console.info(eventName);
-    console.dirxml(subscription);
-    console.groupEnd();
+	console.group("Event Subscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
 };
 
 let publishLogger = function (eventName, publishData) {
-    console.group("Event Published");
-    console.info(eventName);
-    console.dirxml(publishData);
-    console.groupEnd();
+	console.group("Event Published");
+	console.info(eventName);
+	console.dirxml(publishData);
+	console.groupEnd();
 };
 
 let unsubscribeLogger = function (eventName, subscription) {
-    console.group("Event UnSubscribed");
-    console.info(eventName);
-    console.dirxml(subscription);
-    console.groupEnd();
+	console.group("Event UnSubscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
+};
+
+/**
+ * Check if the module is rendered
+ * @param moduleContext {Object} the moduleContext object
+ */
+let isModuleRendered = function (moduleContext) {
+	return (moduleContext && moduleContext.lifeCycleFlags && moduleContext.lifeCycleFlags.rendered == true);
+};
+
+/**
+ * Check if the module has initOn
+ * @param moduleContext {Object} the moduleContext object
+ * @param EventName {String}
+ */
+let checkIfModuleHasInitOn = function (moduleContext, eventName) {
+	//Should also remove from the eventQ maintained
+	return (moduleContext && moduleContext.instanceConfig && moduleContext.instanceConfig.initOn && moduleContext.instanceConfig.initOn.eventName == eventName);
+};
+
+
+/**
+ * Check if the event is subscribed or published using global pubsub
+ * @param instance {Object} the instance object using which the pub sub is handled
+ */
+let isGlobalPubsub = function (instance) {
+	return (instance && instance.getInstanceName() == "PUBSUB");
 };
 
 /**
@@ -126,11 +153,9 @@ class PubSub {
                 // If replay event: publish all the data matched from event queue
                 let publishData = message;
 
-                if ((context && context.lifeCycleFlags && context.lifeCycleFlags.rendered == true) || (context && context.initOn && context.initOn.eventName == eventName) || subscription.type == "KEEP_ON") {
-                    callback.call((context ? context : null), publishData);
-                } else if (!context) {
-                    callback.call(null, publishData);
-                }
+				if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == "KEEP_ON") {
+					callback.call((context ? context : null), publishData);
+				}
 
                 if (subscribeOnce) {
                     subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
@@ -147,36 +172,42 @@ class PubSub {
 	 * @param eventName {string}
 	 * @param callback {function} the callback method to be unsubscribed
 	 */
-    unsubscribe(subscriber, eventName, callback) {
+	unsubscribe(subscriber, eventName, callback) {
 
-        var subscriptionsForEvent = subscriptions[eventName];
-        if (!subscriptionsForEvent) {
-            return;
-        }
+		var subscriptionsForEvent = subscriptions[eventName];
+		if (!subscriptionsForEvent) {
+			return;
+		}
 
-        // Check if any RE_PLAY event is there and all the event context is of is same as
-        // destroy its data from eventQ
-        let replaySubscriptions = subscriptionsForEvent.filter((subscription) => {
-            if (subscription.type === "RE_PLAY") return subscription;
-        });
+		// Check if any RE_PLAY event is there and all the event context is of is same as
+		// destroy its data from eventQ
+		let replaySubscriptions = subscriptionsForEvent.filter((subscription) => {
+			if (subscription.type === "RE_PLAY") return subscription;
+		});
 
 
-        subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
-            return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
-        });
+		subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
+			return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
+		});
 
-        unsubscribeLogger(eventName, subscriptionsForEvent);
+		unsubscribeLogger(eventName, subscriptionsForEvent);
 
-        if (replaySubscriptions.length) {
+		if (replaySubscriptions.length) {
 
-            if (!subscriptions[eventName].length) {
-                // Remove all the items from eventQ with eventName
-                eventQ.store = eventQ.store.filter((evt) => {
-                    if (evt.eventName !== eventName) return evt;
-                })
-            }
-        }
-    };
+			if (!subscriptions[eventName].length) {
+				// Remove all the items from eventQ with eventName
+				eventQ.store = eventQ.store.filter((evt) => {
+					if (evt.eventName !== eventName) return evt;
+				})
+			}
+		}
+	}
+
+;
+
+	getInstanceName() {
+		return "PUBSUB";
+	}
 }
 
 export default PubSub;

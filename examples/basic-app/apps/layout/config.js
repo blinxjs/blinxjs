@@ -24,6 +24,9 @@ export default {
 	}, {
 		"moduleName": "footerModule",
 		"instanceConfig": {
+			initOn: {
+				eventName: 'HEADER_EVENT'
+			},
 			"container": "#footer-container",
 			"placeholders": {}
 		},

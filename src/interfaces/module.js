@@ -305,6 +305,10 @@ let Module = (function () {
 
             return compiledHTML;
         }
+
+		getInstanceName(){
+			return "MODULE";
+		}
     }
 
     return Module;
