@@ -2504,6 +2504,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	      if (!_store.subscriptions[eventName]) _store.subscriptions[eventName] = [];
 	      var subscriptionData = _utils2.default.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+	      subscriptionData["moduleContext"] = this;
 	      _store.subscriptions[eventName].push(subscriptionData);
 	      subscribeLogger(eventName, subscription);
 	    }
@@ -2554,6 +2555,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var callback = subscription.callback,
 	            context = subscription.context,
 	            subscribeOnce = subscription.once,
+	            moduleContext = subscription.moduleContext,
 	            subscriptionMatched = false;
 
 	        if (!callback || typeof callback !== "function") {

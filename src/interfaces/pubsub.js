@@ -59,112 +59,118 @@ class PubSub {
 	 * @param subscription {Object} the subscription object
 	 * @param [eventName = subscription.eventName]
 	 */
-    subscribe(subscription, eventName = subscription.eventName) {
-        if (!subscriptions[eventName]) subscriptions[eventName] = [];
-        let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
-        subscriptions[eventName].push(subscriptionData);
-        subscribeLogger(eventName, subscription);
-    };
-    /**
-     * Publishes a blinx event
-     * @param eventName {string}
-     * @param message {string}
-     */
-    publish(eventName, message) {
-        let publisher = "";
-        if (arguments.length === 3) {
-            publisher = arguments[0] || "";
-            eventName = arguments[1];
-            message = arguments[2];
-        } else {
-            publisher = Utils.getCSSSelector(this);
-        }
-        var subscriptionsForEvent = subscriptions[eventName],
-            remainingSubscriptions = [];
+	subscribe(subscription, eventName = subscription.eventName) {
+		if (!subscriptions[eventName]) subscriptions[eventName] = [];
+		let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+		subscriptionData["moduleContext"] = this;
+		subscriptions[eventName].push(subscriptionData);
+		subscribeLogger(eventName, subscription);
+	}
 
-        if (!subscriptionsForEvent) {
-            return;
-        }
+;
+	/**
+	 * Publishes a blinx event
+	 * @param eventName {string}
+	 * @param message {string}
+	 */
+	publish(eventName, message) {
+		let publisher = "";
+		if (arguments.length === 3) {
+			publisher = arguments[0] || "";
+			eventName = arguments[1];
+			message = arguments[2];
+		} else {
+			publisher = Utils.getCSSSelector(this);
+		}
+		var subscriptionsForEvent = subscriptions[eventName],
+			remainingSubscriptions = [];
 
-        publishLogger(eventName, {
-            eventName: eventName,
-            message: message,
-            publisher: publisher,
-            subscription: subscriptionsForEvent
-        });
+		if (!subscriptionsForEvent) {
+			return;
+		}
 
-        // If any of the subscription is of type Replay
-        // Push the message to eventQ
-        let replaySubscriptions = subscriptionsForEvent.filter((subs) => {
-            if (subs.type === "RE_PLAY") return subs;
-        });
-        if (replaySubscriptions.length) eventQ.store.push({
-            eventName,
-            message,
-            publisher
-        });
+		publishLogger(eventName, {
+			eventName: eventName,
+			message: message,
+			publisher: publisher,
+			subscription: subscriptionsForEvent
+		});
 
-        subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
+		// If any of the subscription is of type Replay
+		// Push the message to eventQ
+		let replaySubscriptions = subscriptionsForEvent.filter((subs) => {
+			if (subs.type === "RE_PLAY") return subs;
+		});
+		if (replaySubscriptions.length) eventQ.store.push({
+			eventName,
+			message,
+			publisher
+		});
 
-            let callback = subscription.callback,
-                context = subscription.context,
-                subscribeOnce = subscription.once,
-                subscriptionMatched = false;
+		subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
 
-			if(!callback || typeof callback !== "function") {
+			let callback = subscription.callback,
+				context = subscription.context,
+				subscribeOnce = subscription.once,
+				moduleContext = subscription.moduleContext,
+				subscriptionMatched = false;
+
+			if (!callback || typeof callback !== "function") {
 				console.error("The callback for the event is invalid");
 				return;
 			}
 
 
-            if (subscription.eventPublisher) {
-                let regex = new RegExp(subscription.eventPublisher + "$");
-                if (regex.test(publisher)) {
-                    subscriptionMatched = true;
-                } else {
+			if (subscription.eventPublisher) {
+				let regex = new RegExp(subscription.eventPublisher + "$");
+				if (regex.test(publisher)) {
+					subscriptionMatched = true;
+				} else {
 
-                    let actualPublisherHierarchy = publisher.split(' '),
-                        subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
-                        actualPublisherHierarchyLength = actualPublisherHierarchy.length,
-                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+					let actualPublisherHierarchy = publisher.split(' '),
+						subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
+						actualPublisherHierarchyLength = actualPublisherHierarchy.length,
+						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-                    while (actualPublisherHierarchy.length && subscriptionPublisherHierarhcy.length) {
+					while (actualPublisherHierarchy.length && subscriptionPublisherHierarhcy.length) {
 
-                        actualPublisherHierarchyLength = actualPublisherHierarchy.length;
-                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+						actualPublisherHierarchyLength = actualPublisherHierarchy.length;
+						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-                        if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
-                            actualPublisherHierarchy.pop();
-                            subscriptionPublisherHierarhcy.pop();
-                        } else {
-                            actualPublisherHierarchy.pop();
-                        }
-                    }
+						if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
+							actualPublisherHierarchy.pop();
+							subscriptionPublisherHierarhcy.pop();
+						} else {
+							actualPublisherHierarchy.pop();
+						}
+					}
 
-                    if (!subscriptionPublisherHierarhcy.length) {
-                        subscriptionMatched = true;
-                    }
-                }
-            }
+					if (!subscriptionPublisherHierarhcy.length) {
+						subscriptionMatched = true;
+					}
+				}
+			}
 
-            if (!subscription.eventPublisher || subscriptionMatched) {
+			if (!subscription.eventPublisher || subscriptionMatched) {
 
-                // If replay event: publish only after render is complete
-                // If replay event: publish all the data matched from event queue
-                let publishData = message;
+				// If replay event: publish only after render is complete
+				// If replay event: publish all the data matched from event queue
+				let publishData = message;
 
 				if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == "KEEP_ON") {
 					callback.call((context ? context : null), publishData);
 				}
 
-                if (subscribeOnce) {
-                    subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
-                        return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)
-                    });
-                }
-            }
-        });
-    };
+				if (subscribeOnce) {
+					subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
+						return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)
+					});
+				}
+			}
+		});
+	}
+
+;
 
 	/**
 	 * unsubscribes a blinx event

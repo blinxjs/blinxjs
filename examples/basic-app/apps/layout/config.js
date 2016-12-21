@@ -8,10 +8,7 @@ export default {
 		"instanceConfig": {
 			"container": "#header-container",
 			"placeholders": {},
-			"listensTo": [{
-				eventName: 'HEADER_EVENT',
-				callback: 'show'
-			}]
+			"listensTo": []
 		},
 		"module": headerModuleInstance
 	}, {
