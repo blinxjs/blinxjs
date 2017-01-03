@@ -1,6 +1,6 @@
 {
   "name": "blinx",
-  "version": "0.8.6",
+  "version": "0.9.5",
   "description": "The Scalable JavaScript Application Framework",
   "main": "lib/index.js",
   "directories": {
@@ -43,5 +43,8 @@
     "jsdoc": "3.4.0",
     "nightwatch": "0.8.18",
     "webpack": "1.13.0"
+  },
+  "dependencies": {
+    "lodash": "4.17.2"
   }
 }

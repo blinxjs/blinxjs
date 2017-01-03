@@ -8,10 +8,7 @@ export default {
 		"instanceConfig": {
 			"container": "#header-container",
 			"placeholders": {},
-			"listensTo": [{
-				eventName: 'HEADER_EVENT',
-				callback: 'show'
-			}]
+			"listensTo": []
 		},
 		"module": headerModuleInstance
 	}, {
@@ -24,6 +21,9 @@ export default {
 	}, {
 		"moduleName": "footerModule",
 		"instanceConfig": {
+			initOn: {
+				eventName: 'HEADER_EVENT'
+			},
 			"container": "#footer-container",
 			"placeholders": {}
 		},
