@@ -12,7 +12,7 @@ import merge from 'lodash/fp/merge';
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
-import Devtool from "./blinx-devtool";
+import Devtool from "./devtool";
 
 /**
  *

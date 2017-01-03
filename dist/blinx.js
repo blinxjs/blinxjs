@@ -975,7 +975,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var uniqueIdsTill = -1;
 
@@ -1856,14 +1856,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.destroyInstance = undefined;
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**This is the major framework file.
-	                                                                                                                                                                                                                                                                               * @exports {
-	                                                                                                                                                                                                                                                                               * 	createInstance: creates a new instance of the module.
-	                                                                                                                                                                                                                                                                               * 	destroyModuleInstance: destroys the module instance,
-	                                                                                                                                                                                                                                                                               * 	use: use it if you want to extend Blinx
-	                                                                                                                                                                                                                                                                               *
-	                                                                                                                                                                                                                                                                               * }
-	                                                                                                                                                                                                                                                                               */
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**This is the major framework file.
+	                                                                                                                                                                                                                                                   * @exports {
+	                                                                                                                                                                                                                                                   * 	createInstance: creates a new instance of the module.
+	                                                                                                                                                                                                                                                   * 	destroyModuleInstance: destroys the module instance,
+	                                                                                                                                                                                                                                                   * 	use: use it if you want to extend Blinx
+	                                                                                                                                                                                                                                                   *
+	                                                                                                                                                                                                                                                   * }
+	                                                                                                                                                                                                                                                   */
 
 	exports.destroyModuleInstance = destroyModuleInstance;
 	exports.createInstance = createInstance;
@@ -1883,13 +1883,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _store = __webpack_require__(29);
 
-	var _constants = __webpack_require__(99);
+	var _constants = __webpack_require__(98);
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _blinxDevtool = __webpack_require__(98);
+	var _devtool = __webpack_require__(99);
 
-	var _blinxDevtool2 = _interopRequireDefault(_blinxDevtool);
+	var _devtool2 = _interopRequireDefault(_devtool);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2180,14 +2180,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	var _registerModule = function _registerModule(moduleName, config) {
-		var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
-		var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
-		var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
+		var instance = arguments.length <= 2 || arguments[2] === undefined ? config.module : arguments[2];
+		var instanceConfig = arguments.length <= 3 || arguments[3] === undefined ? config.instanceConfig : arguments[3];
+		var patchModuleArray = arguments.length <= 4 || arguments[4] === undefined ? [] : arguments[4];
 
 		var _this = this;
 
 		var parent = arguments[5];
-		var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
+		var parentMeta = arguments.length <= 6 || arguments[6] === undefined ? parent && parent.meta : arguments[6];
 
 
 		if (typeof parent === "string") {
@@ -2297,7 +2297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} true when module gets deleted successfully
 	 */
 	function destroyModuleInstance(module) {
-		var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+		var context = arguments.length <= 1 || arguments[1] === undefined ? window : arguments[1];
 
 		/// Remove module DOM and unsubscribe its events
 		if (Array.isArray(module)) {
@@ -2409,7 +2409,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var destroyInstance = exports.destroyInstance = destroyModuleInstance;
 
-	_blinxDevtool2.default.attachListener(function () {
+	_devtool2.default.attachListener(function () {
 		return _store.moduleS;
 	});
 
@@ -2508,7 +2508,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param [eventName = subscription.eventName]
 	   */
 			value: function subscribe(subscription) {
-				var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+				var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
 
 				if (!_store.subscriptions[eventName]) _store.subscriptions[eventName] = [];
 				var subscriptionData = _utils2.default.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
@@ -4262,6 +4262,67 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+	exports.default = {
+		EVENT_ENUM: {
+			/**
+	   * The event will be listened even when the module has not been rendered.
+	   */
+			keepOn: "KEEP_ON",
+			/**
+	   * Whenever this type of event is published, the module will receive all the past events along with the current event in the form of an array
+	   */
+			replay: "RE_PLAY",
+			/**
+	   * {@defaultvalue} If the event is of this type then the module starts listening
+	   * to the event once the rendering completes.
+	   */
+			playAfterRender: "PLAY_AFTER_RENDER"
+		},
+
+		MODULE_EVENTS: {
+			resolveRenderOn: "resolveRenderOn",
+			render: "render",
+			onRenderComplete: "onRenderComplete",
+			onStatusChange: "__onStatusChange",
+			destroy: "destroy"
+		},
+
+		onStatusChange_EVENTS: {
+			onCreate: "LIFECYCLE:CREATED",
+			keepOnReplaySubscribed: "LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED",
+			initOnSubscribed: "LIFECYCLE:INIT_ON_SUBSCRIBED",
+			resolveRenderOnCalled: "LIFECYCLE:RESOLVE_RENDER_ON_CALLED",
+			listensToPlayAfterRenderSubscribed: "LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED",
+			renderCalled: "LIFECYCLE:ON_RENDER_CALLED",
+			onRenderCompleteCalled: "LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
+		},
+
+		/**
+	  * @readonly
+	  * @private
+	  * @constant {Object} lifeCycleFlags following fields
+	  * <ul>
+	  * <li>booted: true </li>
+	  * <li>rendered: false</li>
+	  * <li>preRenderResolved: false</li>
+	  * </ul>
+	  */
+		lifeCycleFlags: {
+			booted: true,
+			preRenderResolved: false,
+			rendered: false
+		}
+	};
+
+/***/ },
+/* 99 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
 	/**
 	 * Created by anoof.shaikh on 03/01/17.
 	 */
@@ -4320,67 +4381,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 99 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.default = {
-		EVENT_ENUM: {
-			/**
-	   * The event will be listened even when the module has not been rendered.
-	   */
-			keepOn: "KEEP_ON",
-			/**
-	   * Whenever this type of event is published, the module will receive all the past events along with the current event in the form of an array
-	   */
-			replay: "RE_PLAY",
-			/**
-	   * {@defaultvalue} If the event is of this type then the module starts listening
-	   * to the event once the rendering completes.
-	   */
-			playAfterRender: "PLAY_AFTER_RENDER"
-		},
-
-		MODULE_EVENTS: {
-			resolveRenderOn: "resolveRenderOn",
-			render: "render",
-			onRenderComplete: "onRenderComplete",
-			onStatusChange: "__onStatusChange",
-			destroy: "destroy"
-		},
-
-		onStatusChange_EVENTS: {
-			onCreate: "LIFECYCLE:CREATED",
-			keepOnReplaySubscribed: "LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED",
-			initOnSubscribed: "LIFECYCLE:INIT_ON_SUBSCRIBED",
-			resolveRenderOnCalled: "LIFECYCLE:RESOLVE_RENDER_ON_CALLED",
-			listensToPlayAfterRenderSubscribed: "LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED",
-			renderCalled: "LIFECYCLE:ON_RENDER_CALLED",
-			onRenderCompleteCalled: "LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
-		},
-
-		/**
-	  * @readonly
-	  * @private
-	  * @constant {Object} lifeCycleFlags following fields
-	  * <ul>
-	  * <li>booted: true </li>
-	  * <li>rendered: false</li>
-	  * <li>preRenderResolved: false</li>
-	  * </ul>
-	  */
-		lifeCycleFlags: {
-			booted: true,
-			preRenderResolved: false,
-			rendered: false
-		}
-	};
-
-/***/ },
 /* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -4392,7 +4392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -4576,7 +4576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        function Module(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
 	            _classCallCheck(this, Module);
 
-	            var _this = _possibleConstructorReturn(this, (Module.__proto__ || Object.getPrototypeOf(Module)).call(this));
+	            var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Module).call(this));
 
 	            _this.moduleName = moduleName;
 	            _this.name = name;
@@ -4699,16 +4699,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, {
 	            key: "subscribe",
 	            value: function subscribe(subscription) {
-	                var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+	                var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
 
 	                subscription.eventSubscriber = this.getModuleContainer();
 	                modulePrivateData.get(this).moduleSubscriptions.push(subscription);
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
+	                _get(Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
 	            }
 	        }, {
 	            key: "publish",
 	            value: function publish(eventName, message) {
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
+	                _get(Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
 	            }
 	        }, {
 	            key: "dequeueEvents",
@@ -4732,7 +4732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    callback = eventName.callback;
 	                    eventName = eventName.eventName;
 	                }
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
+	                _get(Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
 	            }
 	        }, {
 	            key: "getInstanceName",
