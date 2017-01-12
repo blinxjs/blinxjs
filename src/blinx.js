@@ -8,10 +8,11 @@
  */
 
 import Utils from "./helpers/utils";
-import _ from "./helpers/lodash.custom";
+import merge from 'lodash/fp/merge';
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
+import Devtool from "./devtool";
 
 /**
  *
@@ -49,7 +50,7 @@ let _emitLifeCycleEvent = function (moduleDetail, eventName) {
  */
 let _listenForInitOn = function (module) {
 
-	if (module.instanceConfig.initOn && module.lifeCycleFlags.rendered) {
+	if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
 
 		return Promise.resolve(module.path);
 	} else {
@@ -146,6 +147,8 @@ let _callRender = function (module, placeholderResponse) {
 		// Null to be replaced with resolveRenderOn data
 
 		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+		module.lifeCycleFlags.rendered = true;
+		_emitLifeCycleEvent(module, "_READY");
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
@@ -155,8 +158,9 @@ let _callRender = function (module, placeholderResponse) {
 		}
 
 		res();
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
+
+		// If there are any queued events , dequeue the events based on modules subscriptions
+		module.dequeueEvents();
 	});
 };
 
@@ -198,8 +202,9 @@ let _startExec = function (patchModules, promiseArr) {
 
 					if(rootModule.meta.children && rootModule.meta.children.length) {
 						rootModule.meta.children && rootModule.meta.children.forEach((module) => {
-
-							_startExec([module.pointer], promiseArr);
+							if(!module.pointer.lifeCycleFlags.rendered) {
+								_startExec([module.pointer], promiseArr);
+							}
 						})
 					}
 					resolve(rootModule.meta.id);
@@ -245,7 +250,8 @@ let _registerSubscription = function (module) {
 		eventName: module.instanceConfig.initOn.eventName,
 		eventPublisher: module.instanceConfig.initOn.eventPublisher,
 		context: module.instanceConfig,
-		callback: Utils.partial(_callResolveRenderOn, module)
+		callback: Utils.partial(_callResolveRenderOn, module),
+		once: true
 	});
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.initOnSubscribed);
 
@@ -301,6 +307,14 @@ let _registerSubscription = function (module) {
  */
 let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent && parent.meta) {
 
+	if(typeof parent === "string"){
+		parent = moduleS.find(function (module) {
+
+			return module.name === parent;
+		});
+		parentMeta = parent && parent.meta;
+	}
+
 	let parentName = config.name ? config.name.split(".") : undefined,
 		foundModules;
 
@@ -318,7 +332,7 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 	}
 
 	if(instanceConfig.placeholders && instance && instance.config && instance.config.placeholders){
-		instanceConfig.placeholders = _.merge(instance.config.placeholders, instanceConfig.placeholders);
+		instanceConfig.placeholders = merge(instance.config.placeholders, instanceConfig.placeholders);
 	}
 
 	if (this instanceof Module) {
@@ -399,6 +413,14 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  */
 export function destroyModuleInstance(module, context = window) {
 	/// Remove module DOM and unsubscribe its events
+	if(Array.isArray(module)) {
+		let status = [];
+		module.forEach(function(singleModule) {
+			status.push(destroyModuleInstance(singleModule));
+		});
+		return status;
+	}
+
 	let moduleInstance;
 	if(typeof module === "string"){
 		moduleInstance = moduleS.findInstance(module);
@@ -420,6 +442,7 @@ export function destroyModuleInstance(module, context = window) {
 		// Remove element from DOM
 		if(container){
 			container.remove();
+			container = null;
 		}
 
 		// Remove all subscriptions
@@ -463,8 +486,8 @@ export function destroyModuleInstance(module, context = window) {
  * </ul>
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
-export function createInstance(config) {
-	config = _.merge({}, config);
+export function createInstance(config, parentName) {
+	config = merge({}, config);
 
 	if(!Utils.configValidator(config)) return;
 
@@ -480,7 +503,7 @@ export function createInstance(config) {
 		promise,
 		patchModules = [];
 
-	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
+	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
 	_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
 	return new Promise((res, rej)=> {
@@ -494,6 +517,10 @@ export function use(middleware) {
 }
 
 export let destroyInstance = destroyModuleInstance;
+
+Devtool.attachListener(function(){
+	return moduleS;
+});
 
 export default {
 	createInstance,

@@ -18,7 +18,7 @@ function charsRightIndex(string, chars) {
 export default {
 
     getNextUniqueId:  function () {
-        return 'UIF-' + (++uniqueIdsTill);
+        return 'blinx-wrapper-' + (++uniqueIdsTill);
     },
 
     pick: function (obj, arr) {
@@ -72,7 +72,7 @@ export default {
 
 			while(tempParent) {
 				cssSelector = `${tempParent.instanceConfig.container} ${cssSelector}`;
-				tempParent = tempParent.parent && tempParent.parent.pointer ? tempParent.parent.pointer.meta.id : undefined;
+				tempParent = tempParent.meta.parent && tempParent.meta.parent.pointer ? tempParent.meta.parent.pointer : undefined;
 			}
 
 			return cssSelector;
