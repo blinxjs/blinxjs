@@ -4507,13 +4507,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        // Set values
 	                        if (Module.isObject(value)) {
 	                            target[name] = new Proxy(value, ctx.$proxyHandler());
-	                            target[name].__path = path;
 	                        } else {
 	                            target[name] = {
-	                                __value: value,
-	                                __path: path
+	                                __value: value
 	                            };
 	                        }
+	                        Object.defineProperty(target[name], '__path', {
+	                            enumerable: false,
+	                            value: path
+	                        });
 
 	                        // Call
 	                        _callObservingMethods();
@@ -4522,7 +4524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    },
 	                    deleteProperty: function deleteProperty(target, property) {
 	                        var x = void 0;
-	                        if (Module.isObject(target)) {
+	                        if (Module.isObject(target) || Array.isArray(target)) {
 	                            x = delete target[property];
 	                        }
 	                        _callObservingMethods();
