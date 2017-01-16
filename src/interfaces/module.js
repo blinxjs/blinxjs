@@ -121,13 +121,15 @@ let Module = (function () {
                     // Set values
                     if (Module.isObject(value)) {
                         target[name] = new Proxy(value, ctx.$proxyHandler());
-                        target[name].__path = path
                     } else {
                         target[name] = {
-                            __value: value,
-                            __path: path
+                            __value: value
                         };
                     }
+					Object.defineProperty(target[name], '__path',{
+						enumerable: false,
+						value: path
+					});
 
                     // Call
 					_callObservingMethods();
