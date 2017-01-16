@@ -136,7 +136,7 @@ let Module = (function () {
                 },
 				deleteProperty: function (target, property) {
 					let x;
-					if(Module.isObject(target)) {
+					if(Module.isObject(target) || Array.isArray(target)) {
 						x = delete target[property];
 					}
 					_callObservingMethods();
