@@ -975,7 +975,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var uniqueIdsTill = -1;
 
@@ -1856,14 +1856,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.destroyInstance = undefined;
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**This is the major framework file.
-	                                                                                                                                                                                                                                                                               * @exports {
-	                                                                                                                                                                                                                                                                               * 	createInstance: creates a new instance of the module.
-	                                                                                                                                                                                                                                                                               * 	destroyModuleInstance: destroys the module instance,
-	                                                                                                                                                                                                                                                                               * 	use: use it if you want to extend Blinx
-	                                                                                                                                                                                                                                                                               *
-	                                                                                                                                                                                                                                                                               * }
-	                                                                                                                                                                                                                                                                               */
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; }; /**This is the major framework file.
+	                                                                                                                                                                                                                                                   * @exports {
+	                                                                                                                                                                                                                                                   * 	createInstance: creates a new instance of the module.
+	                                                                                                                                                                                                                                                   * 	destroyModuleInstance: destroys the module instance,
+	                                                                                                                                                                                                                                                   * 	use: use it if you want to extend Blinx
+	                                                                                                                                                                                                                                                   *
+	                                                                                                                                                                                                                                                   * }
+	                                                                                                                                                                                                                                                   */
 
 	exports.destroyModuleInstance = destroyModuleInstance;
 	exports.createInstance = createInstance;
@@ -2180,14 +2180,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @private
 	 */
 	var _registerModule = function _registerModule(moduleName, config) {
-		var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
-		var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
-		var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
+		var instance = arguments.length <= 2 || arguments[2] === undefined ? config.module : arguments[2];
+		var instanceConfig = arguments.length <= 3 || arguments[3] === undefined ? config.instanceConfig : arguments[3];
+		var patchModuleArray = arguments.length <= 4 || arguments[4] === undefined ? [] : arguments[4];
 
 		var _this = this;
 
 		var parent = arguments[5];
-		var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
+		var parentMeta = arguments.length <= 6 || arguments[6] === undefined ? parent && parent.meta : arguments[6];
 
 
 		if (typeof parent === "string") {
@@ -2297,7 +2297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {boolean} true when module gets deleted successfully
 	 */
 	function destroyModuleInstance(module) {
-		var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+		var context = arguments.length <= 1 || arguments[1] === undefined ? window : arguments[1];
 
 		/// Remove module DOM and unsubscribe its events
 		if (Array.isArray(module)) {
@@ -2508,7 +2508,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	   * @param [eventName = subscription.eventName]
 	   */
 			value: function subscribe(subscription) {
-				var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+				var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
 
 				if (!_store.subscriptions[eventName]) _store.subscriptions[eventName] = [];
 				var subscriptionData = _utils2.default.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
@@ -4390,13 +4390,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _isEqual = __webpack_require__(210);
 
@@ -4437,166 +4437,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var Module = function (_PubSub) {
 	        _inherits(Module, _PubSub);
 
-	        _createClass(Module, [{
-	            key: "$proxyHandler",
-
-
-	            // ***
-	            // Observer
-	            value: function $proxyHandler() {
-	                var ctx = this;
-	                var _callObservingMethods = function _callObservingMethods() {
-	                    setTimeout(function () {
-	                        ctx.$_observerFns.forEach(function (fnObj) {
-	                            if (Array.isArray(fnObj.deps)) {
-	                                (function () {
-
-	                                    // Dont trigger if adjacent node/sibling node has changed
-	                                    var pathArray = path.split("=");
-	                                    var depsMatched = fnObj.deps.find(function (deps) {
-	                                        var depsArr = deps.split(".");
-
-	                                        if ((0, _isEqual2.default)(depsArr, pathArray)) return true;
-
-	                                        if (pathArray.length < depsArr.length) {
-	                                            var pathLastIndex = pathArray.length - 1;
-
-	                                            if ((0, _isEqual2.default)(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
-	                                        }
-
-	                                        if (pathArray.length <= depsArr.length) {
-	                                            return pathArray.find(function (keyItem, index) {
-	                                                return depsArr[index] !== keyItem;
-	                                            });
-	                                        }
-	                                    });
-
-	                                    depsMatched ? fnObj.fn.call(ctx) : undefined;
-	                                })();
-	                            } else {
-	                                fnObj.fn.call(ctx);
-	                            }
-	                        });
-	                    });
-	                };
-	                return {
-	                    get: function get(target, prop, receiver) {
-	                        try {
-	                            return Module.isObject(target[prop]) && "__value" in target[prop] ? target[prop].__value : target[prop];
-	                        } catch (err) {
-	                            return undefined;
-	                        }
-	                    },
-	                    set: function set(target, name, value) {
-
-	                        if (Array.isArray(target) && name === "length") {
-	                            target.length = value;
-	                            return target;
-	                        }
-
-	                        var path = void 0;
-
-	                        // Dont set meta data for meta fields
-	                        if (name === "__path" || name === "__value") {
-	                            target[name] = value;
-	                            return target;
-	                        }
-
-	                        path = target.__path ? target.__path + "=" + name : name;
-
-	                        // Set values
-	                        if (Module.isObject(value)) {
-	                            target[name] = new Proxy(value, ctx.$proxyHandler());
-	                        } else {
-	                            target[name] = {
-	                                __value: value
-	                            };
-	                        }
-	                        Object.defineProperty(target[name], '__path', {
-	                            enumerable: false,
-	                            value: path
-	                        });
-
-	                        // Call
-	                        _callObservingMethods();
-
-	                        return target;
-	                    },
-	                    deleteProperty: function deleteProperty(target, property) {
-	                        var x = void 0;
-	                        if (Module.isObject(target) || Array.isArray(target)) {
-	                            x = delete target[property];
-	                        }
-	                        _callObservingMethods();
-	                        return x;
-	                    },
-	                    has: function has(target, prop) {
-	                        try {
-	                            return (Module.isObject(target) || Array.isArray(target)) && target[prop];
-	                        } catch (err) {
-	                            return false;
-	                        }
-	                    }
-	                };
-	            }
-
-	            /**
-	             *
-	             * @param moduleName {string} the name of the module
-	             * @param uniqueId {string} the unique id of the module
-	             * @param path {string} the path of the module
-	             * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
-	             * @param instanceConfig the configuration of the module passed
-	             * @param instanceData It is the reference of module
-	             */
-
-	        }], [{
-	            key: "isObject",
-	            value: function isObject(x) {
-	                return x != null && (typeof x === "undefined" ? "undefined" : _typeof(x)) === 'object';
-	            }
-	        }, {
-	            key: "getDependencies",
-	            value: function getDependencies(fnStr) {
-
-	                // Return if ._ is used directly
-	                if (fnStr.match(/\._[^.]/g)) {
-	                    return "*";
-	                }
-
-	                var matched = fnStr.match(/\._\.((\S)*[a-zA-Z0-9_$])/g),
-	                    matchAll = "*";
-
-	                // If any dependency is not found, trigger all the time.
-	                if (!matched || matched.length === 0) {
-	                    return matchAll;
-	                }
-
-	                matched = matched.map(function (match) {
-	                    var splitted = match.split("._.");
-	                    return splitted[1] || splitted[0];
-	                });
-
-	                // If any evaluated dependency is present at root level
-	                var evaluatedDependencyAtRoot = matched.find(function (match) {
-	                    return match.startsWith("._[");
-	                });
-	                if (evaluatedDependencyAtRoot) {
-	                    return matchAll;
-	                }
-
-	                matched = matched.map(function (match) {
-	                    return match.split("[")[0];
-	                });
-
-	                return matched;
-	            }
-	        }]);
+	        /**
+	         *
+	         * @param moduleName {string} the name of the module
+	         * @param uniqueId {string} the unique id of the module
+	         * @param path {string} the path of the module
+	         * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
+	         * @param instanceConfig the configuration of the module passed
+	         * @param instanceData It is the reference of module
+	         */
 
 	        function Module(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
 	            _classCallCheck(this, Module);
 
-	            var _this = _possibleConstructorReturn(this, (Module.__proto__ || Object.getPrototypeOf(Module)).call(this));
+	            var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Module).call(this));
 
 	            _this.moduleName = moduleName;
 	            _this.name = name;
@@ -4619,23 +4473,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _store.middleWareFns.forEach(function (middlewareFn) {
 	                _extends(_this, middlewareFn(_this));
 	            });
-
-	            // Observable proxy setup
-	            _this.$_observerFns = [];
-	            _this.observe_For && _this.observe_For.forEach(function (fnName) {
-	                if (!_this[fnName] || typeof _this[fnName] !== "function") {
-	                    console.error("{fnName} is not available over module. Can be observed.");
-	                    return;
-	                }
-	                var fnObj = {
-	                    fn: _this[fnName],
-	                    deps: Module.getDependencies(String(_this[fnName]))
-	                };
-
-	                _this.$_observerFns.push(fnObj);
-	            });
-
-	            _this._ = new Proxy({}, _this.$proxyHandler());
 	            return _this;
 	        }
 
@@ -4719,16 +4556,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, {
 	            key: "subscribe",
 	            value: function subscribe(subscription) {
-	                var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+	                var eventName = arguments.length <= 1 || arguments[1] === undefined ? subscription.eventName : arguments[1];
 
 	                subscription.eventSubscriber = this.getModuleContainer();
 	                modulePrivateData.get(this).moduleSubscriptions.push(subscription);
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
+	                _get(Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
 	            }
 	        }, {
 	            key: "publish",
 	            value: function publish(eventName, message) {
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
+	                _get(Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
 	            }
 	        }, {
 	            key: "dequeueEvents",
@@ -4752,7 +4589,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    callback = eventName.callback;
 	                    eventName = eventName.eventName;
 	                }
-	                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
+	                _get(Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
 	            }
 	        }, {
 	            key: "getInstanceName",
