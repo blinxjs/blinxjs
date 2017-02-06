@@ -60,6 +60,38 @@ let Module = (function () {
         // Observer
         $proxyHandler() {
             let ctx = this;
+			let _callObservingMethods = function() {
+				setTimeout(() => {
+					ctx.$_observerFns.forEach((fnObj) => {
+						if (Array.isArray(fnObj.deps)) {
+
+							// Dont trigger if adjacent node/sibling node has changed
+							let pathArray = path.split("=");
+							let depsMatched = fnObj.deps.find((deps) => {
+								let depsArr = deps.split(".");
+
+								if (isEqual(depsArr, pathArray)) return true;
+
+								if (pathArray.length < depsArr.length) {
+									let pathLastIndex = pathArray.length - 1;
+
+									if (isEqual(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
+								}
+
+								if (pathArray.length <= depsArr.length) {
+									return pathArray.find((keyItem, index) => {
+										return depsArr[index] !== keyItem;
+									});
+								}
+							});
+
+							depsMatched ? fnObj.fn.call(ctx) : undefined;
+						} else {
+							fnObj.fn.call(ctx);
+						}
+					});
+				});
+			};
             return {
                 get: function (target, prop, receiver) {
                     try {
@@ -89,48 +121,36 @@ let Module = (function () {
                     // Set values
                     if (Module.isObject(value)) {
                         target[name] = new Proxy(value, ctx.$proxyHandler());
-                        target[name].__path = path
                     } else {
                         target[name] = {
-                            __value: value,
-                            __path: path
+                            __value: value
                         };
                     }
+					Object.defineProperty(target[name], '__path',{
+						enumerable: false,
+						value: path
+					});
 
                     // Call
-                    setTimeout(() => {
-                        ctx.$_observerFns.forEach((fnObj) => {
-                            if (Array.isArray(fnObj.deps)) {
-
-                                // Dont trigger if adjacent node/sibling node has changed
-                                let pathArray = path.split("=");
-                                let depsMatched = fnObj.deps.find((deps) => {
-                                    let depsArr = deps.split(".");
-
-                                    if (isEqual(depsArr, pathArray)) return true;
-
-                                    if (pathArray.length < depsArr.length) {
-                                        let pathLastIndex = pathArray.length - 1;
-
-                                        if (isEqual(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
-                                    }
-
-                                    if (pathArray.length <= depsArr.length) {
-                                        return pathArray.find((keyItem, index) => {
-                                            depsArr[index] !== keyItem;
-                                        });
-                                    }
-                                });
-
-                                depsMatched ? fnObj.fn.call(ctx) : undefined;
-                            } else {
-                                fnObj.fn.call(ctx);
-                            }
-                        });
-                    });
+					_callObservingMethods();
 
                     return target;
-                }
+                },
+				deleteProperty: function (target, property) {
+					let x;
+					if(Module.isObject(target) || Array.isArray(target)) {
+						x = delete target[property];
+					}
+					_callObservingMethods();
+					return x;
+				},
+				has: function(target, prop) {
+					try {
+						return ((Module.isObject(target) || Array.isArray(target)) && target[prop]);
+					} catch (err){
+						return false;
+					}
+				}
             };
         }
 
