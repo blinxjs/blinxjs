@@ -27,31 +27,52 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>export default {
+	/**
+	 * &lt;ul>
+	 *&lt;li> EVENT_ENUM: ENUM constant for the types of events
+	 *&lt;li>"KEEP_ON": The event will be listened even when the module has not been rendered.
+	 *&lt;li> "RE_PLAY": Non rendered modules with replay events will be queued on publishing. Will automatically call the callback once the rendering is complete.
+	 *&lt;li> "PLAY_AFTER_RENDER",{@defaultvalue} If the event is of this type then the module starts listening
+	 * to the event once the rendering completes.
+	 * &lt;/ul>
+	 */
 	EVENT_ENUM: {
-		/**
-		 * The event will be listened even when the module has not been rendered.
-		 */
 		keepOn: "KEEP_ON",
-		/**
-		 * Whenever this type of event is published, the module will receive all the past events along with the current event in the form of an array
-		 */
 		replay: "RE_PLAY",
-		/**
-		 * {@defaultvalue} If the event is of this type then the module starts listening
-		 * to the event once the rendering completes.
-		 */
 		playAfterRender: "PLAY_AFTER_RENDER"
 	},
 
-
+	/**
+	 * Based on the module lifecycle. The following events occur
+	 * &lt;ul>
+	 *&lt;li> 1) resolveRenderOn: event occurs just before resolveRenderOn method is called
+	 *&lt;li> 2) render: event occurs when page renders(in case template passed) or just before render method is called
+	 *&lt;li> 3) onRenderComplete: event is fired just before onRenderComplete method is called
+	 *&lt;li> 4) onStatusChange: event is fired whenever the status of module is changed. The status change events are mentioned
+	 *    on the next section
+	 *&lt;li> 5) destroy: event occurs when module is destroyed.
+	 * &lt;/ul>
+	 */
 	MODULE_EVENTS: {
 		resolveRenderOn: "resolveRenderOn",
 		render: "render",
 		onRenderComplete: "onRenderComplete",
-		onStatusChange: "onStatusChange",
+		onStatusChange: "__onStatusChange",
 		destroy: "destroy"
 	},
-
+	/**
+	 *
+	 * LIFECYCLE EVENTS LIST:
+	 * &lt;ul>
+	 *&lt;li>1)"LIFECYCLE:CREATED",
+	 *&lt;li>2)"LIFECYCLE:KEEP_ON_&amp;_REPLAY_SUBSCRIBED",
+	 *&lt;li>3)"LIFECYCLE:INIT_ON_SUBSCRIBED",
+	 *&lt;li>4)"LIFECYCLE:RESOLVE_RENDER_ON_CALLED",
+	 *&lt;li>5)"LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED",
+	 *&lt;li>6)"LIFECYCLE:ON_RENDER_CALLED",
+	 *&lt;li>7)"LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
+	 * &lt;/ul>
+	 */
 	onStatusChange_EVENTS: {
 		onCreate: "LIFECYCLE:CREATED",
 		keepOnReplaySubscribed: "LIFECYCLE:KEEP_ON_&amp;_REPLAY_SUBSCRIBED",
@@ -88,13 +109,14 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li><li><a href="The%2520publisher%2520subscriber%2520module%2520for%2520Blinx.%250AIt%2520is%2520responsible%2520for%2520the%2520communication%2520between%2520the%2520modules%2520through%2520eventsmodule_.html">The publisher subscriber module for Blinx.
+It is responsible for the communication between the modules through events</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#attachListener">attachListener</a></li><li><a href="global.html#checkIfModuleHasInitOn">checkIfModuleHasInitOn</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyInstance">destroyInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isGlobalPubsub">isGlobalPubsub</a></li><li><a href="global.html#isModuleRendered">isModuleRendered</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#PubSubHelper">PubSubHelper</a></li><li><a href="global.html#subscriptions">subscriptions</a></li><li><a href="global.html#use">use</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 17:24:01 GMT+0530 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 06 2017 13:40:46 GMT+0530 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

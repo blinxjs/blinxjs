@@ -176,7 +176,7 @@ let _callRender = function (module, placeholderResponse) {
  * </p>
  *
  * @recursive
- * @param rootModules {Array} The array of modules to be rendered. Initially list is taken from {@link moduleS}
+ * @param patchModules {Array} The array of modules to be rendered. Initially list is taken from {@link moduleS}
  * @param promiseArr {Array} the array of promise objects
  * @private
  */
@@ -407,7 +407,7 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  *     <li> Removes the entry of module from module store </li>
  *     <li> Removes the entry of child modules from module store </li>
  * </ul>
- * @param moduleName {string} The name of the module to be destroyed
+ * @param module {Array| Object} The module to be destroyed
  * @param [context = window] {object} @todo . Reserved for future enhancement
  * @returns {boolean} true when module gets deleted successfully
  */
@@ -436,7 +436,6 @@ export function destroyModuleInstance(module, context = window) {
 		if(module[CONSTANTS.MODULE_EVENTS.destroy]){
 			module[CONSTANTS.MODULE_EVENTS.destroy]();
 		}
-
 		let container = context.document.querySelector(`#${module.getUniqueId()}`);
 
 		// Remove element from DOM
@@ -444,14 +443,11 @@ export function destroyModuleInstance(module, context = window) {
 			container.remove();
 			container = null;
 		}
-
 		// Remove all subscriptions
 		let moduleSubscriptions = module.getAllSubscriptions();
 		moduleSubscriptions.forEach(function (subscription) {
 			module.unsubscribe(subscription.eventName, subscription.callback);
 		});
-
-
 		if(module.meta.children && module.meta.children.length){
 
 			let childPointers = module.meta.children.map((child)=>{
@@ -464,10 +460,8 @@ export function destroyModuleInstance(module, context = window) {
 				destroyModuleInstance(childNode);
 			});
 		}
-
 		moduleS.deleteInstance(module.meta.id);
 	});
-
 	return true;
 }
 
@@ -511,13 +505,33 @@ export function createInstance(config, parentName) {
 	});
 }
 
-
+/**
+ * The middlewares are the additional functionalities that you can create in blinx.
+ * These are providers which enhances the basic functionalities. You can create your own provider too.
+ * The provider is generally in format
+ * export default function (module) {
+ * 	return {
+ * 	render: function(){
+ * 	//your overridden logic
+ * 	}
+ * 	}
+ * }
+ * where module is the instance of the module passed evrytime a new instance is created and any of the default methods provided by the blinx can be overridden
+ * here example render
+ * @param middleware
+ */
 export function use(middleware) {
 	middleWareFns.push(middleware);
 }
-
+/**
+ * Deprecating destroyModuleInstance for name consistency
+ * @type {destroyModuleInstance}
+ */
 export let destroyInstance = destroyModuleInstance;
 
+/**
+ * used for Development tool for chrome
+ */
 Devtool.attachListener(function(){
 	return moduleS;
 });

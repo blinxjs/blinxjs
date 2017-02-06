@@ -5,7 +5,6 @@ import PubSub from "./pubsub";
 import {createInstance} from "../blinx";
 
 /**
- * All the modules created by this framework will be extended by this Module.
  * @module Module
  */
 let Module = (function () {
@@ -13,6 +12,7 @@ let Module = (function () {
 
     /**
      * @class
+	 * All the modules created by this framework will be extended by this Module.
      * @extends {@link PubSub}
      */
     class Module extends PubSub {
@@ -134,14 +134,14 @@ let Module = (function () {
             };
         }
 
-        /**
-         *
-         * @param moduleName {string} the name of the module
-         * @param uniqueId {string} the unique id of the module
-         * @param path {string} the path of the module
-         * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
-         * @param instanceConfig the configuration of the module passed
+		/**
+		 * @constructor
+		 * @param name
+		 * @param moduleName {string} the name of the module
+		 * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
+		 * @param instanceConfig the configuration of the module passed
          * @param instanceData It is the reference of module
+         * @param meta
          */
         constructor(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
             super();
@@ -187,6 +187,7 @@ let Module = (function () {
         }
 
         /**
+		 * @method
          * renders the template using placeholder
          * @param placeholderData : The placeholder data for creation of template
          */
@@ -201,6 +202,7 @@ let Module = (function () {
         };
 
         /**
+		 * @method
          * gets all the events of all types subscribed by the module
          * @returns {array} array of subscriptions
          */
@@ -209,6 +211,7 @@ let Module = (function () {
         };
 
         /**
+		 * @method
          * gets the unique id of the module
          * @returns {string}
          */
@@ -217,6 +220,7 @@ let Module = (function () {
         };
 
         /**
+		 * @method
          * gets the unique id  of the parent element
          * @returns {string}
          */
@@ -228,36 +232,76 @@ let Module = (function () {
             return "";
         };
 
+		/**
+		 * @method
+		 *
+		 * @returns {string}
+         */
         getModuleContainer() {
             return `#${this.getUniqueId()}`;
         };
 
+		/**
+		 *
+		 * @method
+		 * @returns {string|*}
+         */
         getModuleName() {
             return this.moduleName;
         };
 
+		/**
+		 *
+		 * @method
+		 * @returns {*}
+         */
         getInstanceConfig() {
             return this.instanceConfig.placeholders;
         };
 
+		/**
+		 *
+		 * @method
+		 * @returns {*}
+         */
         getCSSSelector() {
             return Utils.getCSSSelector(this, moduleS);
         };
 
+		/**
+		 *
+		 * @method
+		 */
         destroy() {
 
         };
 
+		/**
+		 *
+		 * @method
+		 * @param subscription
+		 * @param eventName
+         */
         subscribe(subscription, eventName = subscription.eventName) {
             subscription.eventSubscriber = this.getModuleContainer();
             modulePrivateData.get(this).moduleSubscriptions.push(subscription);
             super.subscribe(subscription, eventName);
         };
 
+		/**
+		 *
+		 * @method
+		 * @param eventName
+		 * @param message
+         */
         publish(eventName, message) {
             super.publish(eventName, message);
         };
 
+		/**
+		 *
+		 * @method
+		 */
         dequeueEvents() {
             let moduleSubscriptions = this.getAllSubscriptions();
             eventQ.store.forEach((evt)=> {
@@ -272,6 +316,12 @@ let Module = (function () {
             });
         };
 
+		/**
+		 *
+		 * @method
+		 * @param eventName
+		 * @param callback
+         */
         unsubscribe(eventName, callback) {
             if (typeof eventName === "object") {
                 callback = eventName.callback;
@@ -281,6 +331,13 @@ let Module = (function () {
         };
 
 
+		/**
+		 * @method
+		 * actual rendering happens here. Puts the wrapper for the module and adds it to the container.
+		 * @param module {Object}
+		 * @param compiledHTML
+         * @returns {*}
+         */
         static createModuleArena(module, compiledHTML) {
             // If compiledHTML is not provided, start creating dom element progressively.
             let themeClass = "";
@@ -306,6 +363,11 @@ let Module = (function () {
             return compiledHTML;
         }
 
+		/**
+		 * For internal use
+		 * This method is currently used to check is the event occured via Pub sub or a module
+		 * @returns {string}
+		 */
 		getInstanceName(){
 			return "MODULE";
 		}

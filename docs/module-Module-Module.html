@@ -31,6 +31,8 @@
         <h2>
             <span class="ancestors"><a href="module-Module.html">Module</a>~</span>Module</h2>
         
+            <div class="class-description"><p>All the modules created by this framework will be extended by this Module.</p></div>
+        
     
 </header>
 
@@ -40,8 +42,10 @@
         
 
     
+    <h2>Constructor</h2>
+    
 
-    <h4 class="name" id="Module"><span class="type-signature"></span>new Module<span class="signature">(moduleName, uniqueId, path, lifeCycleFlags, instanceConfig, instanceData)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Module"><span class="type-signature"></span>new Module<span class="signature">(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta)</span><span class="type-signature"></span></h4>
 
     
 
@@ -80,6 +84,24 @@
 
         <tr>
             
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>moduleName</code></td>
             
 
@@ -97,52 +119,6 @@
             
 
             <td class="description last"><p>the name of the module</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>uniqueId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the unique id of the module</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the path of the module</p></td>
         </tr>
 
     
@@ -205,6 +181,24 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>meta</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -242,7 +236,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line17">line 17</a>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line18">line 18</a>
     </li></ul></dd>
     
 
@@ -302,15 +296,11 @@
 
     
 
-    <h4 class="name" id="getAllSubscriptions"><span class="type-signature"></span>getAllSubscriptions<span class="signature">()</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id="dequeueEvents"><span class="type-signature"></span>dequeueEvents<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>gets all the events of all types subscribed by the module</p>
-</div>
 
 
 
@@ -353,7 +343,163 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line72">line 72</a>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line305">line 305</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line275">line 275</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getCSSSelector"><span class="type-signature"></span>getCSSSelector<span class="signature">()</span><span class="type-signature"> &rarr; {*}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line267">line 267</a>
     </li></ul></dd>
     
 
@@ -379,10 +525,6 @@
 <h5>Returns:</h5>
 
         
-<div class="param-desc">
-    <p>array of subscriptions</p>
-</div>
-
 
 
 <dl>
@@ -391,7 +533,7 @@
     </dt>
     <dd>
         
-<span class="param-type">array</span>
+<span class="param-type">*</span>
 
 
     </dd>
@@ -406,14 +548,111 @@
 
     
 
-    <h4 class="name" id="getParentInstanceId"><span class="type-signature"></span>getParentInstanceId<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="getInstanceConfig"><span class="type-signature"></span>getInstanceConfig<span class="signature">()</span><span class="type-signature"> &rarr; {*}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line258">line 258</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getInstanceName"><span class="type-signature"></span>getInstanceName<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>gets the unique id  of the parent element</p>
+    <p>For internal use
+This method is currently used to check is the event occured via Pub sub or a module</p>
 </div>
 
 
@@ -457,7 +696,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line88">line 88</a>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line371">line 371</a>
     </li></ul></dd>
     
 
@@ -506,15 +745,11 @@
 
     
 
-    <h4 class="name" id="getUniqueId"><span class="type-signature"></span>getUniqueId<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="getModuleContainer"><span class="type-signature"></span>getModuleContainer<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
 
-
-<div class="description">
-    <p>gets the unique id of the module</p>
-</div>
 
 
 
@@ -557,7 +792,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line80">line 80</a>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line240">line 240</a>
     </li></ul></dd>
     
 
@@ -606,15 +841,110 @@
 
     
 
-    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">(placeholderData)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getModuleName"><span class="type-signature"></span>getModuleName<span class="signature">()</span><span class="type-signature"> &rarr; {string|*}</span></h4>
 
     
 
 
 
-<div class="description">
-    <p>renders the template using placeholder</p>
-</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line249">line 249</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+|
+
+<span class="param-type">*</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="publish"><span class="type-signature"></span>publish<span class="signature">(eventName, message)</span><span class="type-signature"></span></h4>
+
+    
+
+
 
 
 
@@ -649,7 +979,7 @@
 
         <tr>
             
-                <td class="name"><code>placeholderData</code></td>
+                <td class="name"><code>eventName</code></td>
             
 
             <td class="type">
@@ -660,7 +990,25 @@
 
             
 
-            <td class="description last"><p>: The placeholder data for creation of template</p></td>
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
         </tr>
 
     
@@ -701,7 +1049,287 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line58">line 58</a>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line297">line 297</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="subscribe"><span class="type-signature"></span>subscribe<span class="signature">(subscription, eventName)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>subscription</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>eventName</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line285">line 285</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="unsubscribe"><span class="type-signature"></span>unsubscribe<span class="signature">(eventName, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>eventName</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="interfaces_module.js.html">interfaces/module.js</a>, <a href="interfaces_module.js.html#line325">line 325</a>
     </li></ul></dd>
     
 
@@ -743,13 +1371,14 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li><li><a href="The%2520publisher%2520subscriber%2520module%2520for%2520Blinx.%250AIt%2520is%2520responsible%2520for%2520the%2520communication%2520between%2520the%2520modules%2520through%2520eventsmodule_.html">The publisher subscriber module for Blinx.
+It is responsible for the communication between the modules through events</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#attachListener">attachListener</a></li><li><a href="global.html#checkIfModuleHasInitOn">checkIfModuleHasInitOn</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyInstance">destroyInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isGlobalPubsub">isGlobalPubsub</a></li><li><a href="global.html#isModuleRendered">isModuleRendered</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#PubSubHelper">PubSubHelper</a></li><li><a href="global.html#subscriptions">subscriptions</a></li><li><a href="global.html#use">use</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 17:24:01 GMT+0530 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 06 2017 13:40:46 GMT+0530 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

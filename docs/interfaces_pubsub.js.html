@@ -27,11 +27,60 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>import Utils from "../helpers/utils";
-import {moduleS, subscriptions, eventQ} from "./store.js";
+import { moduleS, subscriptions, eventQ } from "./store.js";
+
+let subscribeLogger = function (eventName, subscription) {
+	console.group("Event Subscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
+};
+
+let publishLogger = function (eventName, publishData) {
+	console.group("Event Published");
+	console.info(eventName);
+	console.dirxml(publishData);
+	console.groupEnd();
+};
+
+let unsubscribeLogger = function (eventName, subscription) {
+	console.group("Event UnSubscribed");
+	console.info(eventName);
+	console.dirxml(subscription);
+	console.groupEnd();
+};
 
 /**
- * @class
- *
+ * Check if the module is rendered
+ * @param moduleContext {Object} the moduleContext object
+ */
+let isModuleRendered = function (moduleContext) {
+	return (moduleContext &amp;&amp; moduleContext.lifeCycleFlags &amp;&amp; moduleContext.lifeCycleFlags.rendered == true);
+};
+
+/**
+ * Check if the module has initOn
+ * @param moduleContext {Object} the moduleContext object
+ * @param EventName {String}
+ */
+let checkIfModuleHasInitOn = function (moduleContext, eventName) {
+	//Should also remove from the eventQ maintained
+	return (moduleContext &amp;&amp; moduleContext.instanceConfig &amp;&amp; moduleContext.instanceConfig.initOn &amp;&amp; moduleContext.instanceConfig.initOn.eventName == eventName);
+};
+
+
+/**
+ * Check if the event is subscribed or published using global pubsub
+ * @param instance {Object} the instance object using which the pub sub is handled
+ */
+let isGlobalPubsub = function (instance) {
+	return (instance &amp;&amp; instance.getInstanceName() == "PUBSUB");
+};
+
+/**
+ * @module
+ * The publisher subscriber module for Blinx.
+ * It is responsible for the communication between the modules through events
  */
 class PubSub {
 	/**
@@ -39,19 +88,23 @@ class PubSub {
 	 * @param subscription {Object} the subscription object
 	 * @param [eventName = subscription.eventName]
 	 */
-    subscribe (subscription, eventName = subscription.eventName) {
-        if (!subscriptions[eventName]) subscriptions[eventName] = [];
-        let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
-        subscriptions[eventName].push(subscriptionData);
-    };
-    /**
-     * Publishes a blinx event
-     * @param eventName {string}
-     * @param message {string}
-     */
-    publish(eventName, message) {
+	subscribe(subscription, eventName = subscription.eventName) {
+		if (!subscriptions[eventName]) subscriptions[eventName] = [];
+		let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+		subscriptionData["moduleContext"] = this;
+		subscriptions[eventName].push(subscriptionData);
+		subscribeLogger(eventName, subscription);
+	}
+
+;
+	/**
+	 * Publishes a blinx event
+	 * @param eventName {string}
+	 * @param message {string}
+	 */
+	publish(eventName, message) {
 		let publisher = "";
-		if(arguments.length === 3){
+		if (arguments.length === 3) {
 			publisher = arguments[0] || "";
 			eventName = arguments[1];
 			message = arguments[2];
@@ -61,86 +114,92 @@ class PubSub {
 		var subscriptionsForEvent = subscriptions[eventName],
 			remainingSubscriptions = [];
 
-		if(!subscriptionsForEvent){
+		if (!subscriptionsForEvent) {
 			return;
 		}
 
-        // If any of the subscription is of type Replay
-        // Push the message to eventQ
-        let replaySubscriptions = subscriptionsForEvent.filter((subs)=> {
-            if (subs.type === "RE_PLAY") return subs;
-        });
-        if (replaySubscriptions.length) eventQ.store.push({
-            eventName,
-            message,
-            publisher
-        });
+		publishLogger(eventName, {
+			eventName: eventName,
+			message: message,
+			publisher: publisher,
+			subscription: subscriptionsForEvent
+		});
 
-        subscriptionsForEvent &amp;&amp; subscriptionsForEvent.length &amp;&amp; subscriptionsForEvent.forEach(function (subscription) {
+		// If any of the subscription is of type Replay
+		// Push the message to eventQ
+		let replaySubscriptions = subscriptionsForEvent.filter((subs) => {
+			if (subs.type === "RE_PLAY") return subs;
+		});
+		if (replaySubscriptions.length) eventQ.store.push({
+			eventName,
+			message,
+			publisher
+		});
 
-            let callback = subscription.callback,
-                context = subscription.context,
-                subscribeOnce = subscription.once,
-                subscriptionMatched = false;
+		subscriptionsForEvent &amp;&amp; subscriptionsForEvent.length &amp;&amp; subscriptionsForEvent.forEach(function (subscription) {
+
+			let callback = subscription.callback,
+				context = subscription.context,
+				subscribeOnce = subscription.once,
+				moduleContext = subscription.moduleContext,
+				subscriptionMatched = false;
+
+			if (!callback || typeof callback !== "function") {
+				console.error("The callback for the event is invalid");
+				return;
+			}
 
 
-            if (subscription.eventPublisher) {
-                let regex = new RegExp(subscription.eventPublisher + "$");
-                if (regex.test(publisher)) {
-                    subscriptionMatched = true;
-                } else {
+			if (subscription.eventPublisher) {
+				let regex = new RegExp(subscription.eventPublisher + "$");
+				if (regex.test(publisher)) {
+					subscriptionMatched = true;
+				} else {
 
-                    let actualPublisherHierarchy = publisher.split(' '),
-                        subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
-                        actualPublisherHierarchyLength = actualPublisherHierarchy.length,
-                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+					let actualPublisherHierarchy = publisher.split(' '),
+						subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
+						actualPublisherHierarchyLength = actualPublisherHierarchy.length,
+						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-                    while (actualPublisherHierarchy.length &amp;&amp; subscriptionPublisherHierarhcy.length) {
+					while (actualPublisherHierarchy.length &amp;&amp; subscriptionPublisherHierarhcy.length) {
 
-                        actualPublisherHierarchyLength = actualPublisherHierarchy.length;
-                        subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+						actualPublisherHierarchyLength = actualPublisherHierarchy.length;
+						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-                        if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
-                            actualPublisherHierarchy.pop();
-                            subscriptionPublisherHierarhcy.pop();
-                        } else {
-                            actualPublisherHierarchy.pop();
-                        }
-                    }
+						if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
+							actualPublisherHierarchy.pop();
+							subscriptionPublisherHierarhcy.pop();
+						} else {
+							actualPublisherHierarchy.pop();
+						}
+					}
 
-                    if (!subscriptionPublisherHierarhcy.length) {
-                        subscriptionMatched = true;
-                    }
-                }
-            }
+					if (!subscriptionPublisherHierarhcy.length) {
+						subscriptionMatched = true;
+					}
+				}
+			}
 
-            if (!subscription.eventPublisher || subscriptionMatched) {
+			if (!subscription.eventPublisher || subscriptionMatched) {
 
-                // If replay event: publish only after render is complete
-                // If replay event: publish all the data matched from event queue
-                let publishData = message;
+				// If replay event: publish only after render is complete
+				// If replay event: publish all the data matched from event queue
+				let publishData = message;
 
-                if (subscription.type === "RE_PLAY") {
-                    publishData = eventQ.store.filter((evt)=> {
-                        if (evt.publisher === publisher &amp;&amp; evt.eventName === eventName) {
-                            return evt;
-                        }
-                    }).map((evt)=> {
-                        return evt.message;
-                    });
-                }
+				if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == "KEEP_ON") {
+					callback.call((context ? context : null), publishData);
+				}
 
-                callback.call((context ? context : null), publishData);
-                if (!subscribeOnce) {
-                    remainingSubscriptions.push(subscription);
-                }
-            } else {
-                remainingSubscriptions.push(subscription);
-            }
-        });
+				if (subscribeOnce) {
+					subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
+						return (sub.eventSubscriber !== subscription.eventSubscriber &amp;&amp; sub.eventName !== subscription.eventName)
+					});
+				}
+			}
+		});
+	}
 
-        subscriptions[eventName] = remainingSubscriptions;
-    };
+;
 
 	/**
 	 * unsubscribes a blinx event
@@ -148,35 +207,47 @@ class PubSub {
 	 * @param eventName {string}
 	 * @param callback {function} the callback method to be unsubscribed
 	 */
-    unsubscribe(subscriber, eventName, callback) {
+	unsubscribe(subscriber, eventName, callback) {
 
-        var subscriptionsForEvent = subscriptions[eventName];
-		if(!subscriptionsForEvent) {
+		var subscriptionsForEvent = subscriptions[eventName];
+		if (!subscriptionsForEvent) {
 			return;
 		}
 
-        // Check if any RE_PLAY event is there and all the event context is of is same as
-        // destroy its data from eventQ
-        let replaySubscriptions = subscriptionsForEvent.filter((subscription)=>{
-            if(subscription.type === "RE_PLAY") return subscription;
-        });
+		// Check if any RE_PLAY event is there and all the event context is of is same as
+		// destroy its data from eventQ
+		let replaySubscriptions = subscriptionsForEvent.filter((subscription) => {
+			if (subscription.type === "RE_PLAY") return subscription;
+		});
 
 
-        subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
-            return !(subscription.callback === callback &amp;&amp; subscription.eventSubscriber === subscriber);
-        });
+		subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
+			return !(subscription.callback === callback &amp;&amp; subscription.eventSubscriber === subscriber);
+		});
 
+		unsubscribeLogger(eventName, subscriptionsForEvent);
 
-        if(replaySubscriptions.length){
+		if (replaySubscriptions.length) {
 
-            if(!subscriptions[eventName].length) {
-                // Remove all the items from eventQ with eventName
-                eventQ.store = eventQ.store.filter((evt)=>{
-                    if(evt.eventName !== eventName) return evt;
-                })
-            }
-        }
-    };
+			if (!subscriptions[eventName].length) {
+				// Remove all the items from eventQ with eventName
+				eventQ.store = eventQ.store.filter((evt) => {
+					if (evt.eventName !== eventName) return evt;
+				})
+			}
+		}
+	}
+
+;
+
+	/**
+	 * For internal use
+	 * This method is currently used to check is the event occured via Pub sub or a module 
+	 * @returns {string}
+     */
+	getInstanceName() {
+		return "PUBSUB";
+	}
 }
 
 export default PubSub;
@@ -190,13 +261,14 @@ export default PubSub;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li><li><a href="The%2520publisher%2520subscriber%2520module%2520for%2520Blinx.%250AIt%2520is%2520responsible%2520for%2520the%2520communication%2520between%2520the%2520modules%2520through%2520eventsmodule_.html">The publisher subscriber module for Blinx.
+It is responsible for the communication between the modules through events</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#attachListener">attachListener</a></li><li><a href="global.html#checkIfModuleHasInitOn">checkIfModuleHasInitOn</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyInstance">destroyInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isGlobalPubsub">isGlobalPubsub</a></li><li><a href="global.html#isModuleRendered">isModuleRendered</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#PubSubHelper">PubSubHelper</a></li><li><a href="global.html#subscriptions">subscriptions</a></li><li><a href="global.html#use">use</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 17:24:01 GMT+0530 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 06 2017 13:40:46 GMT+0530 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

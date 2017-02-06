@@ -26,167 +26,382 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import Utils from "../helpers/utils";
-import {moduleS, middleWareFns} from "./store";
+            <pre class="prettyprint source linenums"><code>import isEqual from 'lodash/fp/isEqual';
+import Utils from "../helpers/utils";
+import {moduleS, middleWareFns, eventQ} from "./store";
 import PubSub from "./pubsub";
 import {createInstance} from "../blinx";
 
 /**
- * All the modules created by this framework will be extended by this Module.
  * @module Module
  */
 let Module = (function () {
-	let modulePrivateData = new WeakMap();
+    let modulePrivateData = new WeakMap();
 
-	/**
-	 * @class
-	 * @extends {@link PubSub}
-	 */
-	class Module extends PubSub {
+    /**
+     * @class
+	 * All the modules created by this framework will be extended by this Module.
+     * @extends {@link PubSub}
+     */
+    class Module extends PubSub {
+
+        static isObject(x) {
+            return x != null &amp;&amp; typeof x === 'object';
+        }
+
+
+        static getDependencies(fnStr) {
+
+            // Return if ._ is used directly
+            if (fnStr.match(/\._[^.]/g)) {
+                return "*";
+            }
+
+            let matched = fnStr.match(/\._\.((\S)*[a-zA-Z0-9_$])/g),
+                matchAll = "*";
+
+            // If any dependency is not found, trigger all the time.
+            if (!matched || matched.length === 0) {
+                return matchAll;
+            }
+
+            matched = matched.map((match) => {
+                let splitted = match.split("._.")
+                return splitted[1] || splitted[0];
+            });
+
+            // If any evaluated dependency is present at root level
+            let evaluatedDependencyAtRoot = matched.find((match) => {
+                return match.startsWith("._[");
+            });
+            if (evaluatedDependencyAtRoot) {
+                return matchAll;
+            }
+
+            matched = matched.map(match => match.split("[")[0]);
+
+            return matched;
+        };
+
+
+        // ***
+        // Observer
+        $proxyHandler() {
+            let ctx = this;
+            return {
+                get: function (target, prop, receiver) {
+                    try {
+                        return (Module.isObject(target[prop]) &amp;&amp; "__value" in target[prop]) ? target[prop].__value : target[prop];
+                    } catch (err){
+                        return undefined;
+                    }
+
+                },
+                set: function (target, name, value) {
+
+                    if(Array.isArray(target) &amp;&amp; name === "length") {
+                        target.length = value;
+                        return target;
+                    }
+
+                    let path;
+
+                    // Dont set meta data for meta fields
+                    if (name === "__path" || name === "__value") {
+                        target[name] = value;
+                        return target;
+                    }
+
+                    path = target.__path ? target.__path + "=" + name : name;
+
+                    // Set values
+                    if (Module.isObject(value)) {
+                        target[name] = new Proxy(value, ctx.$proxyHandler());
+                        target[name].__path = path
+                    } else {
+                        target[name] = {
+                            __value: value,
+                            __path: path
+                        };
+                    }
+
+                    // Call
+                    setTimeout(() => {
+                        ctx.$_observerFns.forEach((fnObj) => {
+                            if (Array.isArray(fnObj.deps)) {
+
+                                // Dont trigger if adjacent node/sibling node has changed
+                                let pathArray = path.split("=");
+                                let depsMatched = fnObj.deps.find((deps) => {
+                                    let depsArr = deps.split(".");
+
+                                    if (isEqual(depsArr, pathArray)) return true;
+
+                                    if (pathArray.length &lt; depsArr.length) {
+                                        let pathLastIndex = pathArray.length - 1;
+
+                                        if (isEqual(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
+                                    }
+
+                                    if (pathArray.length &lt;= depsArr.length) {
+                                        return pathArray.find((keyItem, index) => {
+                                            depsArr[index] !== keyItem;
+                                        });
+                                    }
+                                });
+
+                                depsMatched ? fnObj.fn.call(ctx) : undefined;
+                            } else {
+                                fnObj.fn.call(ctx);
+                            }
+                        });
+                    });
+
+                    return target;
+                }
+            };
+        }
+
 		/**
-		 *
+		 * @constructor
+		 * @param name
 		 * @param moduleName {string} the name of the module
-		 * @param uniqueId {string} the unique id of the module
-		 * @param path {string} the path of the module
 		 * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
 		 * @param instanceConfig the configuration of the module passed
-		 * @param instanceData It is the reference of module
-		 */
-		constructor(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
-			super();
+         * @param instanceData It is the reference of module
+         * @param meta
+         */
+        constructor(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
+            super();
 
-			// Apply middleware, PRE:_Create
-			middleWareFns.forEach((middlewareFn)=>{
-				Object.assign(this, middlewareFn(this));
-			});
+            this.moduleName = moduleName;
+            this.name = name;
+            this.lifeCycleFlags = Object.assign({}, lifeCycleFlags);
+            this.instanceConfig = instanceConfig;
+            this.modulePlaceholders = this.instanceConfig.placeholders;
+            this.createChildInstance = createInstance.bind(this);
+            this.meta = meta;
 
-			this.moduleName = moduleName;
-			this.name = name;
-			// this.path = path;
-			this.lifeCycleFlags = lifeCycleFlags;
-			this.instanceConfig = instanceConfig;
-			this.modulePlaceholders = this.instanceConfig.placeholders;
-			this.createInstance = createInstance.bind(this);
-			this.meta = meta;
+            for (let key in instanceData) {
+                this[key] = instanceData[key];
+            }
 
-			for (let key in instanceData) {
-				this[key] = instanceData[key];
-			}
+            modulePrivateData.set(this, {
+                moduleSubscriptions: [],
+                uniqueId: meta.id
+            });
 
-			modulePrivateData.set(this, {
-				moduleSubscriptions: [],
-				uniqueId: meta.id
-			});
-		}
+            // Apply middleware, PRE:_Create
+            middleWareFns.forEach((middlewareFn)=> {
+                Object.assign(this, middlewareFn(this));
+            });
+
+            // Observable proxy setup
+            this.$_observerFns = [];
+            this.observe_For &amp;&amp; this.observe_For.forEach((fnName)=>{
+                if(!this[fnName] || typeof this[fnName] !== "function"){
+                    console.error(`{fnName} is not available over module. Can be observed.`)
+                    return;
+                }
+                let fnObj = {
+                    fn: this[fnName],
+                    deps: Module.getDependencies(String(this[fnName]))
+                };
+
+                this.$_observerFns.push(fnObj);
+            });
+
+            this._ = new Proxy({}, this.$proxyHandler());
+        }
+
+        /**
+		 * @method
+         * renders the template using placeholder
+         * @param placeholderData : The placeholder data for creation of template
+         */
+        render(placeholderData) {
+
+            const containerSelector = this.getUniqueId();
+            const placeholders = placeholderData || this.instanceConfig.placeholders;
+
+            if (!this.template) return;
+
+            document.querySelector(`#${containerSelector}`).innerHTML = this.template(placeholders);
+        };
+
+        /**
+		 * @method
+         * gets all the events of all types subscribed by the module
+         * @returns {array} array of subscriptions
+         */
+        getAllSubscriptions() {
+            return modulePrivateData.get(this).moduleSubscriptions;
+        };
+
+        /**
+		 * @method
+         * gets the unique id of the module
+         * @returns {string}
+         */
+        getUniqueId() {
+            return modulePrivateData.get(this).uniqueId;
+        };
+
+        /**
+		 * @method
+         * gets the unique id  of the parent element
+         * @returns {string}
+         */
+        getParentInstanceId() {
+            if (this.meta.parent) {
+                return this.meta.parent.id
+            }
+
+            return "";
+        };
 
 		/**
-		 * renders the template using placeholder
-		 * @param placeholderData : The placeholder data for creation of template
-		 */
-		render(placeholderData) {
-
-			const containerSelector = this.getUniqueId();
-			const placeholders = placeholderData || this.instanceConfig.placeholders;
-
-			if(!this.template) return;
-
-			document.querySelector(`#${containerSelector}`).innerHTML = this.template(placeholders);
-		};
+		 * @method
+		 *
+		 * @returns {string}
+         */
+        getModuleContainer() {
+            return `#${this.getUniqueId()}`;
+        };
 
 		/**
-		 * gets all the events of all types subscribed by the module
-		 * @returns {array} array of subscriptions
-		 */
-		getAllSubscriptions() {
-			return modulePrivateData.get(this).moduleSubscriptions;
-		};
+		 *
+		 * @method
+		 * @returns {string|*}
+         */
+        getModuleName() {
+            return this.moduleName;
+        };
 
 		/**
-		 * gets the unique id of the module
+		 *
+		 * @method
+		 * @returns {*}
+         */
+        getInstanceConfig() {
+            return this.instanceConfig.placeholders;
+        };
+
+		/**
+		 *
+		 * @method
+		 * @returns {*}
+         */
+        getCSSSelector() {
+            return Utils.getCSSSelector(this, moduleS);
+        };
+
+		/**
+		 *
+		 * @method
+		 */
+        destroy() {
+
+        };
+
+		/**
+		 *
+		 * @method
+		 * @param subscription
+		 * @param eventName
+         */
+        subscribe(subscription, eventName = subscription.eventName) {
+            subscription.eventSubscriber = this.getModuleContainer();
+            modulePrivateData.get(this).moduleSubscriptions.push(subscription);
+            super.subscribe(subscription, eventName);
+        };
+
+		/**
+		 *
+		 * @method
+		 * @param eventName
+		 * @param message
+         */
+        publish(eventName, message) {
+            super.publish(eventName, message);
+        };
+
+		/**
+		 *
+		 * @method
+		 */
+        dequeueEvents() {
+            let moduleSubscriptions = this.getAllSubscriptions();
+            eventQ.store.forEach((evt)=> {
+                let queuedEvent = moduleSubscriptions.filter((event)=> {
+                    if (evt.eventName === event.eventName &amp;&amp; event.type === "RE_PLAY") {
+                        return event;
+                    }
+                });
+                queuedEvent.forEach((event) => {
+                    event.callback &amp;&amp; event.callback.call((event.context ? event.context : null), evt.message);
+                });
+            });
+        };
+
+		/**
+		 *
+		 * @method
+		 * @param eventName
+		 * @param callback
+         */
+        unsubscribe(eventName, callback) {
+            if (typeof eventName === "object") {
+                callback = eventName.callback;
+                eventName = eventName.eventName;
+            }
+            super.unsubscribe(this.getModuleContainer(), eventName, callback);
+        };
+
+
+		/**
+		 * @method
+		 * actual rendering happens here. Puts the wrapper for the module and adds it to the container.
+		 * @param module {Object}
+		 * @param compiledHTML
+         * @returns {*}
+         */
+        static createModuleArena(module, compiledHTML) {
+            // If compiledHTML is not provided, start creating dom element progressively.
+            let themeClass = "";
+
+            if (module.instanceConfig.moduleClassName) {
+                themeClass = module.instanceConfig.theme ? module.instanceConfig.moduleClassName + '-' + module.instanceConfig.theme : module.instanceConfig.moduleClassName + '-default';
+            } else {
+                themeClass = module.instanceConfig.theme ? module.moduleName + '-' + module.instanceConfig.theme : module.moduleName + '-default';
+            }
+
+            if (typeof compiledHTML !== "string") {
+                document.querySelector(module.instanceConfig.container).innerHTML = `&lt;div id="${module.getUniqueId()}" class="${themeClass} play-arena">&lt;/div>`;
+                return;
+            }
+
+            // If compiledHTML is provided, create page string.
+            if (compiledHTML.trim() === "") {
+                compiledHTML = `&lt;div id="${module.getUniqueId()}">&lt;/div>`;
+            } else {
+
+            }
+
+            return compiledHTML;
+        }
+
+		/**
+		 * For internal use
+		 * This method is currently used to check is the event occured via Pub sub or a module
 		 * @returns {string}
 		 */
-		getUniqueId() {
-			return modulePrivateData.get(this).uniqueId;
-		};
-
-		/**
-		 * gets the unique id  of the parent element
-		 * @returns {string}
-		 */
-		getParentInstanceId() {
-			if(this.meta.parent){
-				return this.meta.parent.id
-			}
-
-			return "";
-		};
-
-		getModuleContainer() {
-			return `#${this.getUniqueId()}`;
-		};
-
-		getModuleName() {
-			return this.moduleName;
-		};
-
-		getInstanceConfig() {
-			return this.instanceConfig.placeholders;
-		};
-
-		getCSSSelector() {
-			return Utils.getCSSSelector(this, moduleS);
-		};
-
-		destroy() {
-
-		};
-
-		subscribe(subscription, eventName = subscription.eventName) {
-			subscription.eventSubscriber = this.getModuleContainer();
-			modulePrivateData.get(this).moduleSubscriptions.push(subscription);
-			super.subscribe(subscription, eventName);
-		};
-
-		publish(eventName, message) {
-			super.publish(eventName, message);
-		};
-
-		unsubscribe(eventName, callback) {
-			if(typeof eventName === "object"){
-				callback = eventName.callback;
-				eventName = eventName.eventName;
-			}
-			super.unsubscribe(this.getModuleContainer(), eventName, callback);
-		};
-
-
-		static createModuleArena(module, compiledHTML) {
-			// If compiledHTML is not provided, start creating dom element progressively.
-			let themeClass ="";
-
-			if(module.instanceConfig.moduleClassName){
-				themeClass = module.instanceConfig.theme ? module.instanceConfig.moduleClassName + '-' + module.instanceConfig.theme : module.instanceConfig.moduleClassName + '-default';
-			} else {
-				themeClass = module.instanceConfig.theme ? module.moduleName + '-' + module.instanceConfig.theme : module.moduleName + '-default';
-			}
-
-			if (typeof compiledHTML !== "string") {
-				document.querySelector(module.instanceConfig.container).innerHTML = `&lt;div id="${module.getUniqueId()}" class="${themeClass} play-arena">&lt;/div>`;
-				return;
-			}
-
-			// If compiledHTML is provided, create page string.
-			if (compiledHTML.trim() === "") {
-				compiledHTML = `&lt;div id="${module.getUniqueId()}">&lt;/div>`;
-			} else {
-
-			}
-
-			return compiledHTML;
+		getInstanceName(){
+			return "MODULE";
 		}
-	}
+    }
 
-	return Module;
+    return Module;
 })();
 
 export default Module
@@ -200,13 +415,14 @@ export default Module
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li><li><a href="The%2520publisher%2520subscriber%2520module%2520for%2520Blinx.%250AIt%2520is%2520responsible%2520for%2520the%2520communication%2520between%2520the%2520modules%2520through%2520eventsmodule_.html">The publisher subscriber module for Blinx.
+It is responsible for the communication between the modules through events</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#attachListener">attachListener</a></li><li><a href="global.html#checkIfModuleHasInitOn">checkIfModuleHasInitOn</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyInstance">destroyInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isGlobalPubsub">isGlobalPubsub</a></li><li><a href="global.html#isModuleRendered">isModuleRendered</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#PubSubHelper">PubSubHelper</a></li><li><a href="global.html#subscriptions">subscriptions</a></li><li><a href="global.html#use">use</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 17:24:01 GMT+0530 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 06 2017 13:40:46 GMT+0530 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

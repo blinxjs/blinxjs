@@ -36,9 +36,11 @@
  */
 
 import Utils from "./helpers/utils";
+import merge from 'lodash/fp/merge';
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
+import Devtool from "./devtool";
 
 /**
  *
@@ -76,7 +78,7 @@ let _emitLifeCycleEvent = function (moduleDetail, eventName) {
  */
 let _listenForInitOn = function (module) {
 
-	if (module.instanceConfig.initOn &amp;&amp; module.lifeCycleFlags.rendered) {
+	if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
 
 		return Promise.resolve(module.path);
 	} else {
@@ -98,21 +100,23 @@ let _listenForInitOn = function (module) {
 let _callResolveRenderOn = function (module, data) {
 
 	Module.createModuleArena(module);
+
 	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
 
 		let moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
-		if (moduleResoved instanceof Promise) {
+		if (moduleResoved &amp;&amp; moduleResoved.then &amp;&amp; typeof moduleResoved.then === "function") {
 
-			return moduleResoved.then((res)=> {
-
+			let onPromiseComplete = (res)=> {
 				module.lifeCycleFlags.preRenderResolved = true;
 				_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 				return _lockEvents(module, res);
-			});
+			};
+
+			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
 		} else {
 
 			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
-			return _lockEvents(module, module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data));
+			return _lockEvents(module, moduleResoved);
 		}
 
 	} else {
@@ -120,7 +124,6 @@ let _callResolveRenderOn = function (module, data) {
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 		return _lockEvents(module, data);
 	}
-
 };
 
 // STEP:3 [Hot events]
@@ -172,6 +175,8 @@ let _callRender = function (module, placeholderResponse) {
 		// Null to be replaced with resolveRenderOn data
 
 		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+		module.lifeCycleFlags.rendered = true;
+		_emitLifeCycleEvent(module, "_READY");
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
@@ -180,9 +185,10 @@ let _callRender = function (module, placeholderResponse) {
 			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
 		}
 
-		res(module.path, compiledHTML);
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
+		res();
+
+		// If there are any queued events , dequeue the events based on modules subscriptions
+		module.dequeueEvents();
 	});
 };
 
@@ -198,7 +204,7 @@ let _callRender = function (module, placeholderResponse) {
  * &lt;/p>
  *
  * @recursive
- * @param rootModules {Array} The array of modules to be rendered. Initially list is taken from {@link moduleS}
+ * @param patchModules {Array} The array of modules to be rendered. Initially list is taken from {@link moduleS}
  * @param promiseArr {Array} the array of promise objects
  * @private
  */
@@ -222,11 +228,14 @@ let _startExec = function (patchModules, promiseArr) {
 			_listenForInitOn(rootModule)
 				.then(() => {
 
-					resolve();
-					rootModule.meta.children &amp;&amp; rootModule.meta.children.forEach((module) => {
-
-						_startExec([module.pointer], promiseArr);
-					})
+					if(rootModule.meta.children &amp;&amp; rootModule.meta.children.length) {
+						rootModule.meta.children &amp;&amp; rootModule.meta.children.forEach((module) => {
+							if(!module.pointer.lifeCycleFlags.rendered) {
+								_startExec([module.pointer], promiseArr);
+							}
+						})
+					}
+					resolve(rootModule.meta.id);
 				});
 		});
 
@@ -269,7 +278,8 @@ let _registerSubscription = function (module) {
 		eventName: module.instanceConfig.initOn.eventName,
 		eventPublisher: module.instanceConfig.initOn.eventPublisher,
 		context: module.instanceConfig,
-		callback: Utils.partial(_callResolveRenderOn, module)
+		callback: Utils.partial(_callResolveRenderOn, module),
+		once: true
 	});
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.initOnSubscribed);
 
@@ -295,7 +305,6 @@ let _registerSubscription = function (module) {
 		});
 
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.keepOnReplaySubscribed);
-	return Promise.resolve(module.path);
 };
 
 /**
@@ -326,6 +335,14 @@ let _registerSubscription = function (module) {
  */
 let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent &amp;&amp; parent.meta) {
 
+	if(typeof parent === "string"){
+		parent = moduleS.find(function (module) {
+
+			return module.name === parent;
+		});
+		parentMeta = parent &amp;&amp; parent.meta;
+	}
+
 	let parentName = config.name ? config.name.split(".") : undefined,
 		foundModules;
 
@@ -343,7 +360,7 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 	}
 
 	if(instanceConfig.placeholders &amp;&amp; instance &amp;&amp; instance.config &amp;&amp; instance.config.placeholders){
-		instanceConfig.placeholders = Object.assign(instance.config.placeholders, instanceConfig.placeholders);
+		instanceConfig.placeholders = merge(instance.config.placeholders, instanceConfig.placeholders);
 	}
 
 	if (this instanceof Module) {
@@ -379,14 +396,13 @@ let _registerModule = function (moduleName, config, instance = config.module, in
 
 	let moduleDetail = new Module(config.name, moduleName, CONSTANTS.lifeCycleFlags, instanceConfig, instance, meta);
 
-	_emitLifeCycleEvent(moduleDetail, "_CREATED");
-	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
-
-
 	// Store module
 	moduleS.insertInstance(moduleDetail);
 	patchModuleArray.push(moduleDetail);
 	_registerSubscription(moduleDetail);
+
+	_emitLifeCycleEvent(moduleDetail, "_CREATED");
+	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
 
 	if (parentMeta) {
 
@@ -419,13 +435,20 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  *     &lt;li> Removes the entry of module from module store &lt;/li>
  *     &lt;li> Removes the entry of child modules from module store &lt;/li>
  * &lt;/ul>
- * @param moduleName {string} The name of the module to be destroyed
+ * @param module {Array| Object} The module to be destroyed
  * @param [context = window] {object} @todo . Reserved for future enhancement
  * @returns {boolean} true when module gets deleted successfully
  */
 export function destroyModuleInstance(module, context = window) {
-
 	/// Remove module DOM and unsubscribe its events
+	if(Array.isArray(module)) {
+		let status = [];
+		module.forEach(function(singleModule) {
+			status.push(destroyModuleInstance(singleModule));
+		});
+		return status;
+	}
+
 	let moduleInstance;
 	if(typeof module === "string"){
 		moduleInstance = moduleS.findInstance(module);
@@ -441,21 +464,18 @@ export function destroyModuleInstance(module, context = window) {
 		if(module[CONSTANTS.MODULE_EVENTS.destroy]){
 			module[CONSTANTS.MODULE_EVENTS.destroy]();
 		}
-
 		let container = context.document.querySelector(`#${module.getUniqueId()}`);
 
 		// Remove element from DOM
 		if(container){
 			container.remove();
+			container = null;
 		}
-
 		// Remove all subscriptions
 		let moduleSubscriptions = module.getAllSubscriptions();
 		moduleSubscriptions.forEach(function (subscription) {
 			module.unsubscribe(subscription.eventName, subscription.callback);
 		});
-
-
 		if(module.meta.children &amp;&amp; module.meta.children.length){
 
 			let childPointers = module.meta.children.map((child)=>{
@@ -468,10 +488,8 @@ export function destroyModuleInstance(module, context = window) {
 				destroyModuleInstance(childNode);
 			});
 		}
-
 		moduleS.deleteInstance(module.meta.id);
 	});
-
 	return true;
 }
 
@@ -490,44 +508,66 @@ export function destroyModuleInstance(module, context = window) {
  * &lt;/ul>
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
-export function createInstance(config) {
+export function createInstance(config, parentName) {
+	config = merge({}, config);
+
+	if(!Utils.configValidator(config)) return;
+
+	let modulesToDestory = moduleS.filter((moduleInstance)=>{
+		return moduleInstance.instanceConfig.container === config.instanceConfig.container;
+	});
+
+	modulesToDestory.forEach((moduleInstance)=>{
+		destroyModuleInstance(moduleInstance);
+	});
+
 	let moduleResolvePromiseArr = [],
 		promise,
 		patchModules = [];
 
-	if(!config || !config.moduleName || !config.module || !config.instanceConfig) {
-		console.log("the config provided to create module instance in invalid!");
-        return;
-	}
-	if(!config.instanceConfig.container || !config.instanceConfig.listensTo) {
-		console.log("the instance config provided to the module "+ config.moduleName+" is incorrect");
-        return;
-	}
-	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules);
+	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
 	_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
-	Utils.communicateToExtension(moduleS);
-
-	promise = new Promise((res, rej)=> {
-
-		Promise.all(moduleResolvePromiseArr).then(()=> {
-
-			res();
-		})
+	return new Promise((res, rej)=> {
+		Promise.all(moduleResolvePromiseArr).then(res).catch(rej)
 	});
-
-	return promise;
 }
 
-
+/**
+ * The middlewares are the additional functionalities that you can create in blinx.
+ * These are providers which enhances the basic functionalities. You can create your own provider too.
+ * The provider is generally in format
+ * export default function (module) {
+ * 	return {
+ * 	render: function(){
+ * 	//your overridden logic
+ * 	}
+ * 	}
+ * }
+ * where module is the instance of the module passed evrytime a new instance is created and any of the default methods provided by the blinx can be overridden
+ * here example render
+ * @param middleware
+ */
 export function use(middleware) {
-
 	middleWareFns.push(middleware);
 }
+/**
+ * Deprecating destroyModuleInstance for name consistency
+ * @type {destroyModuleInstance}
+ */
+export let destroyInstance = destroyModuleInstance;
+
+/**
+ * used for Development tool for chrome
+ */
+Devtool.attachListener(function(){
+	return moduleS;
+});
 
 export default {
 	createInstance,
-	destroyModuleInstance,
+	destroyInstance,
+	destroyModuleInstance, // Deprecated
 	use
 };
 </code></pre>
@@ -540,13 +580,14 @@ export default {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li><li><a href="PubSub.html">PubSub</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#subscriptions">subscriptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-interfaces_store.html">interfaces/store</a></li><li><a href="module-Module.html">Module</a></li><li><a href="The%2520publisher%2520subscriber%2520module%2520for%2520Blinx.%250AIt%2520is%2520responsible%2520for%2520the%2520communication%2520between%2520the%2520modules%2520through%2520eventsmodule_.html">The publisher subscriber module for Blinx.
+It is responsible for the communication between the modules through events</a></li></ul><h3>Classes</h3><ul><li><a href="module-Module-Module.html">Module</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_callRender">_callRender</a></li><li><a href="global.html#_callResolveRenderOn">_callResolveRenderOn</a></li><li><a href="global.html#_emitLifeCycleEvent">_emitLifeCycleEvent</a></li><li><a href="global.html#_listenForInitOn">_listenForInitOn</a></li><li><a href="global.html#_lockEvents">_lockEvents</a></li><li><a href="global.html#_onBreath">_onBreath</a></li><li><a href="global.html#_registerModule">_registerModule</a></li><li><a href="global.html#_registerSubscription">_registerSubscription</a></li><li><a href="global.html#_startExec">_startExec</a></li><li><a href="global.html#attachListener">attachListener</a></li><li><a href="global.html#checkIfModuleHasInitOn">checkIfModuleHasInitOn</a></li><li><a href="global.html#createInstance">createInstance</a></li><li><a href="global.html#deleteInstance">deleteInstance</a></li><li><a href="global.html#destroyInstance">destroyInstance</a></li><li><a href="global.html#destroyModuleInstance">destroyModuleInstance</a></li><li><a href="global.html#eventQ">eventQ</a></li><li><a href="global.html#findInstance">findInstance</a></li><li><a href="global.html#insertInstance">insertInstance</a></li><li><a href="global.html#isBrowser">isBrowser</a></li><li><a href="global.html#isGlobalPubsub">isGlobalPubsub</a></li><li><a href="global.html#isModuleRendered">isModuleRendered</a></li><li><a href="global.html#isServer">isServer</a></li><li><a href="global.html#lifeCycleFlags">lifeCycleFlags</a></li><li><a href="global.html#PubSubHelper">PubSubHelper</a></li><li><a href="global.html#subscriptions">subscriptions</a></li><li><a href="global.html#use">use</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Jul 13 2016 17:24:01 GMT+0530 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 06 2017 13:40:46 GMT+0530 (IST)
 </footer>
 
 <script> prettyPrint(); </script>
