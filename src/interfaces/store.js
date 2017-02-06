@@ -1,7 +1,11 @@
-
+/**
+ * The module store stores all the instances of the modules which are loaded. It deletes the instances in case they are unloaded from screen 
+ * @module
+ */
 let moduleS = Object.assign([], {
 	/**
 	 * inserts the instance into the module store
+	 * @method
 	 * @param instance  of {@link Module}
 	 */
     insertInstance: function (instance) {
@@ -10,6 +14,7 @@ let moduleS = Object.assign([], {
 
 	/**
 	 * deletes the instance of the module. Removes the entry from the module store
+	 * @method
 	 * instance  of {@link Module}
 	 * @param id
 	 */
@@ -25,6 +30,7 @@ let moduleS = Object.assign([], {
 
 	/**
 	 * Finds all the instances of the module from the module store
+	 * @method
 	 * @param name of the module to be searched
 	 * @returns {Array} of all the instances of the module
 	 */
@@ -73,9 +79,7 @@ let eventQ = {store: []};
 
 let middleWareFns = [];
 
-/**
- * @module
- */
+
 export {
     isBrowser,
     subscriptions,

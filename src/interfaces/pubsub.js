@@ -50,13 +50,16 @@ let isGlobalPubsub = function (instance) {
 };
 
 /**
- * @module
+ * @class
+ * PubSub
  * The publisher subscriber module for Blinx.
  * It is responsible for the communication between the modules through events
  */
 class PubSub {
 	/**
 	 * Subscribes to the blinx event
+	 * @method
+	 * @public
 	 * @param subscription {Object} the subscription object
 	 * @param [eventName = subscription.eventName]
 	 */
@@ -71,6 +74,8 @@ class PubSub {
 ;
 	/**
 	 * Publishes a blinx event
+	 * @method
+	 * @public
 	 * @param eventName {string}
 	 * @param message {string}
 	 */
@@ -175,6 +180,7 @@ class PubSub {
 
 	/**
 	 * unsubscribes a blinx event
+	 * @public
 	 * @param subscriber {Object} the reference of the module which had subscribed the event earlier
 	 * @param eventName {string}
 	 * @param callback {function} the callback method to be unsubscribed
@@ -214,7 +220,7 @@ class PubSub {
 
 	/**
 	 * For internal use
-	 * This method is currently used to check is the event occured via Pub sub or a module 
+	 * This method is currently used to check is the event occured via Pub sub or a module
 	 * @returns {string}
      */
 	getInstanceName() {
