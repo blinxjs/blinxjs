@@ -13,6 +13,7 @@ import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";
 import Devtool from "./devtool";
+import "babel-polyfill";
 
 /**
  *
