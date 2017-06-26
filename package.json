@@ -45,6 +45,7 @@
     "webpack": "1.13.0"
   },
   "dependencies": {
+    "babel-polyfill": "^6.23.0",
     "lodash": "4.17.2"
   }
 }
