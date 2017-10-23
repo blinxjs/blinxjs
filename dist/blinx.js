@@ -582,16 +582,6 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 exports.destroyInstance = undefined;
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**This is the major framework file.
-                                                                                                                                                                                                                                                                               * @exports {
-                                                                                                                                                                                                                                                                               * 	createInstance: creates a new instance of the module.
-                                                                                                                                                                                                                                                                               * 	destroyModuleInstance: destroys the module instance,
-                                                                                                                                                                                                                                                                               * 	use: use it if you want to extend Blinx
-                                                                                                                                                                                                                                                                               *
-                                                                                                                                                                                                                                                                               * }
-                                                                                                                                                                                                                                                                               */
-
 exports.destroyModuleInstance = destroyModuleInstance;
 exports.createInstance = createInstance;
 exports.use = use;
@@ -626,6 +616,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @param eventName [string]
  * @private
  */
+/**This is the major framework file.
+ * @exports {
+ * 	createInstance: creates a new instance of the module.
+ * 	destroyModuleInstance: destroys the module instance,
+ * 	use: use it if you want to extend Blinx
+ *
+ * }
+ */
+
 var _onBreath = function _onBreath(module, eventName) {
 
 	if (module[_constants2.default.MODULE_EVENTS.onStatusChange]) {
@@ -910,9 +909,6 @@ var _registerModule = function _registerModule(moduleName, config) {
 	var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
 	var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
 	var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
-
-	var _this = this;
-
 	var parent = arguments[5];
 	var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
 
@@ -946,14 +942,12 @@ var _registerModule = function _registerModule(moduleName, config) {
 	}
 
 	if (this instanceof _module2.default) {
-		(function () {
 
-			var parentId = _this.getUniqueId();
-			foundModules = _store.moduleS.filter(function (module) {
+		var parentId = this.getUniqueId();
+		foundModules = _store.moduleS.filter(function (module) {
 
-				return module.meta.id === parentId;
-			});
-		})();
+			return module.meta.id === parentId;
+		});
 	} else if (!parent && parentName && parentName.length === 2) {
 
 		foundModules = _store.moduleS.filter(function (module) {
@@ -1028,17 +1022,11 @@ function destroyModuleInstance(module) {
 
 	/// Remove module DOM and unsubscribe its events
 	if (Array.isArray(module)) {
-		var _ret2 = function () {
-			var status = [];
-			module.forEach(function (singleModule) {
-				status.push(destroyModuleInstance(singleModule));
-			});
-			return {
-				v: status
-			};
-		}();
-
-		if ((typeof _ret2 === "undefined" ? "undefined" : _typeof(_ret2)) === "object") return _ret2.v;
+		var status = [];
+		module.forEach(function (singleModule) {
+			status.push(destroyModuleInstance(singleModule));
+		});
+		return status;
 	}
 
 	var moduleInstance = void 0;
@@ -3547,30 +3535,28 @@ var Module = function () {
                     setTimeout(function () {
                         ctx.$_observerFns.forEach(function (fnObj) {
                             if (Array.isArray(fnObj.deps)) {
-                                (function () {
 
-                                    // Dont trigger if adjacent node/sibling node has changed
-                                    var pathArray = path.split("=");
-                                    var depsMatched = fnObj.deps.find(function (deps) {
-                                        var depsArr = deps.split(".");
+                                // Dont trigger if adjacent node/sibling node has changed
+                                var pathArray = path.split("=");
+                                var depsMatched = fnObj.deps.find(function (deps) {
+                                    var depsArr = deps.split(".");
 
-                                        if ((0, _lodash2.default)(depsArr, pathArray)) return true;
+                                    if ((0, _lodash2.default)(depsArr, pathArray)) return true;
 
-                                        if (pathArray.length < depsArr.length) {
-                                            var pathLastIndex = pathArray.length - 1;
+                                    if (pathArray.length < depsArr.length) {
+                                        var pathLastIndex = pathArray.length - 1;
 
-                                            if ((0, _lodash2.default)(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
-                                        }
+                                        if ((0, _lodash2.default)(pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
+                                    }
 
-                                        if (pathArray.length <= depsArr.length) {
-                                            return pathArray.find(function (keyItem, index) {
-                                                return depsArr[index] !== keyItem;
-                                            });
-                                        }
-                                    });
+                                    if (pathArray.length <= depsArr.length) {
+                                        return pathArray.find(function (keyItem, index) {
+                                            return depsArr[index] !== keyItem;
+                                        });
+                                    }
+                                });
 
-                                    depsMatched ? fnObj.fn.call(ctx) : undefined;
-                                })();
+                                depsMatched ? fnObj.fn.call(ctx) : undefined;
                             } else {
                                 fnObj.fn.call(ctx);
                             }
