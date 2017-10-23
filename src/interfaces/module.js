@@ -1,4 +1,4 @@
-import isEqual from 'lodash/fp/isEqual';
+import isEqual from 'lodash.isequal';
 import Utils from "../helpers/utils";
 import {moduleS, middleWareFns, eventQ} from "./store";
 import PubSub from "./pubsub";
