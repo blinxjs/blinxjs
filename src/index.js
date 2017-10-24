@@ -1,5 +1,5 @@
-import PubSub from "./interfaces/pubsub";
-import {createInstance, destroyModuleInstance, destroyInstance, use} from "./blinx";
+import PubSub from './interfaces/pubsub';
+import {createInstance, destroyModuleInstance, destroyInstance, use} from './blinx';
 
 /**
  * exported the Pub Sub Helper
@@ -20,8 +20,8 @@ export const PubSubHelper = new PubSub();
  * 4) use
  */
 export default {
-    createInstance,
+	createInstance,
 	destroyInstance,
-    destroyModuleInstance,
-	use
+	destroyModuleInstance,
+	use,
 };

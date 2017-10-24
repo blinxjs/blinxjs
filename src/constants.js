@@ -9,9 +9,9 @@ export default {
 	 * </ul>
 	 */
 	EVENT_ENUM: {
-		keepOn: "KEEP_ON",
-		replay: "RE_PLAY",
-		playAfterRender: "PLAY_AFTER_RENDER"
+		keepOn: 'KEEP_ON',
+		replay: 'RE_PLAY',
+		playAfterRender: 'PLAY_AFTER_RENDER',
 	},
 
 	/**
@@ -26,11 +26,11 @@ export default {
 	 * </ul>
 	 */
 	MODULE_EVENTS: {
-		resolveRenderOn: "resolveRenderOn",
-		render: "render",
-		onRenderComplete: "onRenderComplete",
-		onStatusChange: "__onStatusChange",
-		destroy: "destroy"
+		resolveRenderOn: 'resolveRenderOn',
+		render: 'render',
+		onRenderComplete: 'onRenderComplete',
+		onStatusChange: '__onStatusChange',
+		destroy: 'destroy',
 	},
 	/**
 	 *
@@ -46,13 +46,13 @@ export default {
 	 * </ul>
 	 */
 	onStatusChange_EVENTS: {
-		onCreate: "LIFECYCLE:CREATED",
-		keepOnReplaySubscribed: "LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED",
-		initOnSubscribed: "LIFECYCLE:INIT_ON_SUBSCRIBED",
-		resolveRenderOnCalled: "LIFECYCLE:RESOLVE_RENDER_ON_CALLED",
-		listensToPlayAfterRenderSubscribed: "LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED",
-		renderCalled: "LIFECYCLE:ON_RENDER_CALLED",
-		onRenderCompleteCalled: "LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
+		onCreate: 'LIFECYCLE:CREATED',
+		keepOnReplaySubscribed: 'LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED',
+		initOnSubscribed: 'LIFECYCLE:INIT_ON_SUBSCRIBED',
+		resolveRenderOnCalled: 'LIFECYCLE:RESOLVE_RENDER_ON_CALLED',
+		listensToPlayAfterRenderSubscribed: 'LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED',
+		renderCalled: 'LIFECYCLE:ON_RENDER_CALLED',
+		onRenderCompleteCalled: 'LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED',
 	},
 
 	/**
@@ -68,6 +68,6 @@ export default {
 	lifeCycleFlags: {
 		booted: true,
 		preRenderResolved: false,
-		rendered: false
-	}
-}
+		rendered: false,
+	},
+};

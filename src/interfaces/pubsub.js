@@ -1,22 +1,22 @@
-import Utils from "../helpers/utils";
-import { moduleS, subscriptions, eventQ } from "./store.js";
+import Utils from '../helpers/utils';
+import {moduleS, subscriptions, eventQ} from './store.js';
 
-let subscribeLogger = function (eventName, subscription) {
-	console.group("Event Subscribed");
+const subscribeLogger = function (eventName, subscription) {
+	console.group('Event Subscribed');
 	console.info(eventName);
 	console.dirxml(subscription);
 	console.groupEnd();
 };
 
-let publishLogger = function (eventName, publishData) {
-	console.group("Event Published");
+const publishLogger = function (eventName, publishData) {
+	console.group('Event Published');
 	console.info(eventName);
 	console.dirxml(publishData);
 	console.groupEnd();
 };
 
-let unsubscribeLogger = function (eventName, subscription) {
-	console.group("Event UnSubscribed");
+const unsubscribeLogger = function (eventName, subscription) {
+	console.group('Event UnSubscribed');
 	console.info(eventName);
 	console.dirxml(subscription);
 	console.groupEnd();
@@ -26,7 +26,7 @@ let unsubscribeLogger = function (eventName, subscription) {
  * Check if the module is rendered
  * @param moduleContext {Object} the moduleContext object
  */
-let isModuleRendered = function (moduleContext) {
+const isModuleRendered = function (moduleContext) {
 	return (moduleContext && moduleContext.lifeCycleFlags && moduleContext.lifeCycleFlags.rendered == true);
 };
 
@@ -35,8 +35,8 @@ let isModuleRendered = function (moduleContext) {
  * @param moduleContext {Object} the moduleContext object
  * @param EventName {String}
  */
-let checkIfModuleHasInitOn = function (moduleContext, eventName) {
-	//Should also remove from the eventQ maintained
+const checkIfModuleHasInitOn = function (moduleContext, eventName) {
+	// Should also remove from the eventQ maintained
 	return (moduleContext && moduleContext.instanceConfig && moduleContext.instanceConfig.initOn && moduleContext.instanceConfig.initOn.eventName == eventName);
 };
 
@@ -45,8 +45,8 @@ let checkIfModuleHasInitOn = function (moduleContext, eventName) {
  * Check if the event is subscribed or published using global pubsub
  * @param instance {Object} the instance object using which the pub sub is handled
  */
-let isGlobalPubsub = function (instance) {
-	return (instance && instance.getInstanceName() == "PUBSUB");
+const isGlobalPubsub = function (instance) {
+	return (instance && instance.getInstanceName() == 'PUBSUB');
 };
 
 /**
@@ -65,13 +65,13 @@ class PubSub {
 	 */
 	subscribe(subscription, eventName = subscription.eventName) {
 		if (!subscriptions[eventName]) subscriptions[eventName] = [];
-		let subscriptionData = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
-		subscriptionData["moduleContext"] = this;
+		const subscriptionData         = Utils.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+		subscriptionData.moduleContext = this;
 		subscriptions[eventName].push(subscriptionData);
 		subscribeLogger(eventName, subscription);
 	}
 
-;
+
 	/**
 	 * Publishes a blinx event
 	 * @method
@@ -80,15 +80,15 @@ class PubSub {
 	 * @param message {string}
 	 */
 	publish(eventName, message) {
-		let publisher = "";
+		let publisher = '';
 		if (arguments.length === 3) {
-			publisher = arguments[0] || "";
+			publisher = arguments[0] || '';
 			eventName = arguments[1];
-			message = arguments[2];
+			message   = arguments[2];
 		} else {
 			publisher = Utils.getCSSSelector(this);
 		}
-		var subscriptionsForEvent = subscriptions[eventName],
+		let subscriptionsForEvent  = subscriptions[eventName],
 			remainingSubscriptions = [];
 
 		if (!subscriptionsForEvent) {
@@ -96,51 +96,50 @@ class PubSub {
 		}
 
 		publishLogger(eventName, {
-			eventName: eventName,
-			message: message,
-			publisher: publisher,
-			subscription: subscriptionsForEvent
+			eventName,
+			message,
+			publisher,
+			subscription: subscriptionsForEvent,
 		});
 
 		// If any of the subscription is of type Replay
 		// Push the message to eventQ
-		let replaySubscriptions = subscriptionsForEvent.filter((subs) => {
-			if (subs.type === "RE_PLAY") return subs;
+		const replaySubscriptions = subscriptionsForEvent.filter((subs) => {
+			if (subs.type === 'RE_PLAY') return subs;
 		});
-		if (replaySubscriptions.length) eventQ.store.push({
-			eventName,
-			message,
-			publisher
-		});
+		if (replaySubscriptions.length) {
+			eventQ.store.push({
+				eventName,
+				message,
+				publisher,
+			});
+		}
 
-		subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
-
-			let callback = subscription.callback,
-				context = subscription.context,
-				subscribeOnce = subscription.once,
-				moduleContext = subscription.moduleContext,
+		subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach((subscription) => {
+			let callback            = subscription.callback,
+				context             = subscription.context,
+				subscribeOnce       = subscription.once,
+				moduleContext       = subscription.moduleContext,
 				subscriptionMatched = false;
 
-			if (!callback || typeof callback !== "function") {
-				console.error("The callback for the event is invalid");
+			if (!callback || typeof callback !== 'function') {
+				console.error('The callback for the event is invalid');
 				return;
 			}
 
 
 			if (subscription.eventPublisher) {
-				let regex = new RegExp(subscription.eventPublisher + "$");
+				const regex = new RegExp(`${subscription.eventPublisher}$`);
 				if (regex.test(publisher)) {
 					subscriptionMatched = true;
 				} else {
-
-					let actualPublisherHierarchy = publisher.split(' '),
-						subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
-						actualPublisherHierarchyLength = actualPublisherHierarchy.length,
+					let actualPublisherHierarchy             = publisher.split(' '),
+						subscriptionPublisherHierarhcy       = subscription.eventPublisher.split(' '),
+						actualPublisherHierarchyLength       = actualPublisherHierarchy.length,
 						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
 					while (actualPublisherHierarchy.length && subscriptionPublisherHierarhcy.length) {
-
-						actualPublisherHierarchyLength = actualPublisherHierarchy.length;
+						actualPublisherHierarchyLength       = actualPublisherHierarchy.length;
 						subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
 						if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
@@ -158,25 +157,21 @@ class PubSub {
 			}
 
 			if (!subscription.eventPublisher || subscriptionMatched) {
-
 				// If replay event: publish only after render is complete
 				// If replay event: publish all the data matched from event queue
-				let publishData = message;
+				const publishData = message;
 
-				if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == "KEEP_ON") {
-					callback.call((context ? context : null), publishData);
+				if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == 'KEEP_ON') {
+					callback.call((context || null), publishData);
 				}
 
 				if (subscribeOnce) {
-					subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
-						return (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName)
-					});
+					subscriptions[eventName] = subscriptions[eventName].filter(sub => (sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName));
 				}
 			}
 		});
 	}
 
-;
 
 	/**
 	 * unsubscribes a blinx event
@@ -186,45 +181,40 @@ class PubSub {
 	 * @param callback {function} the callback method to be unsubscribed
 	 */
 	unsubscribe(subscriber, eventName, callback) {
-
-		var subscriptionsForEvent = subscriptions[eventName];
+		const subscriptionsForEvent = subscriptions[eventName];
 		if (!subscriptionsForEvent) {
 			return;
 		}
 
 		// Check if any RE_PLAY event is there and all the event context is of is same as
 		// destroy its data from eventQ
-		let replaySubscriptions = subscriptionsForEvent.filter((subscription) => {
-			if (subscription.type === "RE_PLAY") return subscription;
+		const replaySubscriptions = subscriptionsForEvent.filter((subscription) => {
+			if (subscription.type === 'RE_PLAY') return subscription;
 		});
 
 
-		subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
-			return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
-		});
+		subscriptions[eventName] = subscriptionsForEvent.filter(subscription => !(subscription.callback === callback && subscription.eventSubscriber === subscriber));
 
 		unsubscribeLogger(eventName, subscriptionsForEvent);
 
 		if (replaySubscriptions.length) {
-
 			if (!subscriptions[eventName].length) {
 				// Remove all the items from eventQ with eventName
 				eventQ.store = eventQ.store.filter((evt) => {
 					if (evt.eventName !== eventName) return evt;
-				})
+				});
 			}
 		}
 	}
 
-;
 
 	/**
 	 * For internal use
 	 * This method is currently used to check is the event occured via Pub sub or a module
 	 * @returns {string}
-     */
+	 */
 	getInstanceName() {
-		return "PUBSUB";
+		return 'PUBSUB';
 	}
 }
 

@@ -94,184 +94,174 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var uniqueIdsTill = -1;
 
 function charsLeftIndex(string, chars) {
-    var index = -1,
-        length = string.length;
+  var index = -1,
+      length = string.length;
 
-    while (++index < length && chars.indexOf(string.charAt(index)) > -1) {}
-    return index;
+  while (++index < length && chars.indexOf(string.charAt(index)) > -1) {}
+  return index;
 }
 
 function charsRightIndex(string, chars) {
-    var index = string.length;
+  var index = string.length;
 
-    while (index-- && chars.indexOf(string.charAt(index)) > -1) {}
-    return index;
+  while (index-- && chars.indexOf(string.charAt(index)) > -1) {}
+  return index;
 }
 
 /* harmony default export */ var utils_defaultExport = ({
+  getNextUniqueId: function getNextUniqueId() {
+    return 'blinx-wrapper-' + ++uniqueIdsTill;
+  },
+  pick: function pick(obj, arr) {
+    var o = {};
+    arr.forEach(function (key) {
+      o[key] = obj[key];
+    });
 
-    getNextUniqueId: function getNextUniqueId() {
-        return 'blinx-wrapper-' + ++uniqueIdsTill;
-    },
-
-    pick: function pick(obj, arr) {
-        var o = {};
-        arr.forEach(function (key) {
-            o[key] = obj[key];
-        });
-
-        return o;
-    },
-
-    length: function length(obj) {
-        if (Array.isArray(obj)) {
-            return obj.length;
-        } else if ((typeof obj === "undefined" ? "undefined" : _typeof(obj)) === "object") {
-            return Object.keys(obj).length;
-        } else if (typeof obj === "string") {
-            return obj.length;
-        } else {
-            return 0;
-        }
-    },
-
-    trim: function trim(string, chars) {
-        return string.slice(charsLeftIndex(string, chars), charsRightIndex(string, chars) + 1);
-    },
-
-    clearSlashes: function clearSlashes(string) {
-        return this.trim(string, "/");
-    },
-
-    partial: function partial(fn /*, args...*/) {
-        // A reference to the Array#slice method.
-        var slice = Array.prototype.slice;
-        // Convert arguments object to an array, removing the first argument.
-        var args = slice.call(arguments, 1);
-
-        return function () {
-            // Invoke the originally-specified function, passing in all originally-
-            // specified arguments, followed by any just-specified arguments.
-            return fn.apply(this, args.concat(slice.call(arguments, 0)));
-        };
-    },
-
-    getCSSSelector: function getCSSSelector(instanceConfig, moduleStore) {
-
-        try {
-            var cssSelector = "" + instanceConfig.instanceConfig.container;
-
-            var tempParent = instanceConfig.meta.parent && instanceConfig.meta.parent.pointer ? instanceConfig.meta.parent.pointer : undefined;
-
-            while (tempParent) {
-                cssSelector = tempParent.instanceConfig.container + " " + cssSelector;
-                tempParent = tempParent.meta.parent && tempParent.meta.parent.pointer ? tempParent.meta.parent.pointer : undefined;
-            }
-
-            return cssSelector;
-        } catch (err) {
-            return "";
-        }
-    },
-
-    configValidator: function configValidator(config) {
-        var isValid = true;
-
-        if (!config) {
-            console.error("Config is mandatory to create instance of any module.");
-            isValid = false;
-        }
-
-        if (!config.moduleName) {
-            console.error("moduleName property on config is require field to create instance of any module.");
-            isValid = false;
-        }
-
-        if (typeof config.moduleName !== "string") {
-            console.error("moduleName property on config should be string.");
-            isValid = false;
-        }
-
-        if (!config.module || _typeof(config.module) !== "object") {
-            console.error("module property on config is mandatory and should be object");
-            isValid = false;
-        }
-
-        if (!config.instanceConfig || config.instanceConfig && !config.instanceConfig.container) {
-            console.error("instanceConfig property and instanceConfig.container is mandatory");
-            isValid = false;
-        }
-
-        if (!isValid) {
-            console.dirxml(config);
-        }
-
-        return isValid;
+    return o;
+  },
+  length: function length(obj) {
+    if (Array.isArray(obj)) {
+      return obj.length;
+    } else if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object') {
+      return Object.keys(obj).length;
+    } else if (typeof obj === 'string') {
+      return obj.length;
     }
+    return 0;
+  },
+  trim: function trim(string, chars) {
+    return string.slice(charsLeftIndex(string, chars), charsRightIndex(string, chars) + 1);
+  },
+  clearSlashes: function clearSlashes(string) {
+    return this.trim(string, '/');
+  },
+  partial: function partial(fn /* , args... */) {
+    // A reference to the Array#slice method.
+    var slice = Array.prototype.slice;
+    // Convert arguments object to an array, removing the first argument.
+    var args = slice.call(arguments, 1);
+
+    return function () {
+      // Invoke the originally-specified function, passing in all originally-
+      // specified arguments, followed by any just-specified arguments.
+      return fn.apply(this, args.concat(slice.call(arguments, 0)));
+    };
+  },
+  getCSSSelector: function getCSSSelector(instanceConfig, moduleStore) {
+    try {
+      var cssSelector = '' + instanceConfig.instanceConfig.container;
+
+      var tempParent = instanceConfig.meta.parent && instanceConfig.meta.parent.pointer ? instanceConfig.meta.parent.pointer : undefined;
+
+      while (tempParent) {
+        cssSelector = tempParent.instanceConfig.container + ' ' + cssSelector;
+        tempParent = tempParent.meta.parent && tempParent.meta.parent.pointer ? tempParent.meta.parent.pointer : undefined;
+      }
+
+      return cssSelector;
+    } catch (err) {
+      return '';
+    }
+  },
+  configValidator: function configValidator(config) {
+    var isValid = true;
+
+    if (!config) {
+      console.error('Config is mandatory to create instance of any module.');
+      isValid = false;
+    }
+
+    if (!config.moduleName) {
+      console.error('moduleName property on config is require field to create instance of any module.');
+      isValid = false;
+    }
+
+    if (typeof config.moduleName !== 'string') {
+      console.error('moduleName property on config should be string.');
+      isValid = false;
+    }
+
+    if (!config.module || _typeof(config.module) !== 'object') {
+      console.error('module property on config is mandatory and should be object');
+      isValid = false;
+    }
+
+    if (!config.instanceConfig || config.instanceConfig && !config.instanceConfig.container) {
+      console.error('instanceConfig property and instanceConfig.container is mandatory');
+      isValid = false;
+    }
+
+    if (!isValid) {
+      console.dirxml(config);
+    }
+
+    return isValid;
+  }
 });
 // CONCATENATED MODULE: ./src/interfaces/store.js
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 /**
- * The module store stores all the instances of the modules which are loaded. It deletes the instances in case they are unloaded from screen 
+ * The module store stores all the instances of the modules which are loaded. It deletes the instances in case they are unloaded from screen
  * @module
  */
 var moduleS = _extends([], {
-	/**
+  /**
   * inserts the instance into the module store
   * @method
   * @param instance  of {@link Module}
   */
-	insertInstance: function insertInstance(instance) {
-		this.push(instance);
-	},
+  insertInstance: function insertInstance(instance) {
+    this.push(instance);
+  },
 
-	/**
+
+  /**
   * deletes the instance of the module. Removes the entry from the module store
   * @method
   * instance  of {@link Module}
   * @param id
   */
-	deleteInstance: function deleteInstance(id) {
+  deleteInstance: function deleteInstance(id) {
+    for (var i = this.length - 1; i >= 0; i--) {
+      if (this[i].meta.id === id) {
+        this.splice(i, 1);
+        break;
+      }
+    }
+  },
 
-		for (var i = this.length - 1; i >= 0; i--) {
-			if (this[i].meta.id === id) {
-				this.splice(i, 1);
-				break;
-			}
-		}
-	},
 
-	/**
+  /**
   * Finds all the instances of the module from the module store
   * @method
   * @param name of the module to be searched
   * @returns {Array} of all the instances of the module
   */
-	findInstance: function findInstance(id, name) {
-		if (id) {
-			return this.filter(function (module) {
-				if (module.meta.id === id) {
-					return module;
-				}
-			});
-		} else if (name) {
-			return this.filter(function (module) {
-				if (module.name === name) {
-					return module;
-				}
-			});
-		} else {
-			return [];
-		}
-	}
+  findInstance: function findInstance(id, name) {
+    if (id) {
+      return this.filter(function (module) {
+        if (module.meta.id === id) {
+          return module;
+        }
+      });
+    } else if (name) {
+      return this.filter(function (module) {
+        if (module.name === name) {
+          return module;
+        }
+      });
+    }
+    return [];
+  }
 });
 
 /**
  * {@todo reserved for future use}
  * @type {boolean}
  */
-var isBrowser = typeof window !== "undefined";
+var isBrowser = typeof window !== 'undefined';
 
 /**
  * {@todo reserved for future use}
@@ -303,24 +293,24 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 
 var subscribeLogger = function subscribeLogger(eventName, subscription) {
-	console.group("Event Subscribed");
-	console.info(eventName);
-	console.dirxml(subscription);
-	console.groupEnd();
+  console.group('Event Subscribed');
+  console.info(eventName);
+  console.dirxml(subscription);
+  console.groupEnd();
 };
 
 var publishLogger = function publishLogger(eventName, publishData) {
-	console.group("Event Published");
-	console.info(eventName);
-	console.dirxml(publishData);
-	console.groupEnd();
+  console.group('Event Published');
+  console.info(eventName);
+  console.dirxml(publishData);
+  console.groupEnd();
 };
 
 var unsubscribeLogger = function unsubscribeLogger(eventName, subscription) {
-	console.group("Event UnSubscribed");
-	console.info(eventName);
-	console.dirxml(subscription);
-	console.groupEnd();
+  console.group('Event UnSubscribed');
+  console.info(eventName);
+  console.dirxml(subscription);
+  console.groupEnd();
 };
 
 /**
@@ -328,7 +318,7 @@ var unsubscribeLogger = function unsubscribeLogger(eventName, subscription) {
  * @param moduleContext {Object} the moduleContext object
  */
 var isModuleRendered = function isModuleRendered(moduleContext) {
-	return moduleContext && moduleContext.lifeCycleFlags && moduleContext.lifeCycleFlags.rendered == true;
+  return moduleContext && moduleContext.lifeCycleFlags && moduleContext.lifeCycleFlags.rendered == true;
 };
 
 /**
@@ -337,8 +327,8 @@ var isModuleRendered = function isModuleRendered(moduleContext) {
  * @param EventName {String}
  */
 var checkIfModuleHasInitOn = function checkIfModuleHasInitOn(moduleContext, eventName) {
-	//Should also remove from the eventQ maintained
-	return moduleContext && moduleContext.instanceConfig && moduleContext.instanceConfig.initOn && moduleContext.instanceConfig.initOn.eventName == eventName;
+  // Should also remove from the eventQ maintained
+  return moduleContext && moduleContext.instanceConfig && moduleContext.instanceConfig.initOn && moduleContext.instanceConfig.initOn.eventName == eventName;
 };
 
 /**
@@ -346,7 +336,7 @@ var checkIfModuleHasInitOn = function checkIfModuleHasInitOn(moduleContext, even
  * @param instance {Object} the instance object using which the pub sub is handled
  */
 var isGlobalPubsub = function isGlobalPubsub(instance) {
-	return instance && instance.getInstanceName() == "PUBSUB";
+  return instance && instance.getInstanceName() == 'PUBSUB';
 };
 
 /**
@@ -357,189 +347,186 @@ var isGlobalPubsub = function isGlobalPubsub(instance) {
  */
 
 var pubsub_PubSub = function () {
-	function PubSub() {
-		_classCallCheck(this, PubSub);
-	}
+  function PubSub() {
+    _classCallCheck(this, PubSub);
+  }
 
-	_createClass(PubSub, [{
-		key: "subscribe",
+  _createClass(PubSub, [{
+    key: 'subscribe',
 
-		/**
-   * Subscribes to the blinx event
-   * @method
-   * @public
-   * @param subscription {Object} the subscription object
-   * @param [eventName = subscription.eventName]
-   */
-		value: function subscribe(subscription) {
-			var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+    /**
+    * Subscribes to the blinx event
+    * @method
+    * @public
+    * @param subscription {Object} the subscription object
+    * @param [eventName = subscription.eventName]
+    */
+    value: function subscribe(subscription) {
+      var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
 
-			if (!subscriptions[eventName]) subscriptions[eventName] = [];
-			var subscriptionData = utils_defaultExport.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
-			subscriptionData["moduleContext"] = this;
-			subscriptions[eventName].push(subscriptionData);
-			subscribeLogger(eventName, subscription);
-		}
-	}, {
-		key: "publish",
+      if (!subscriptions[eventName]) subscriptions[eventName] = [];
+      var subscriptionData = utils_defaultExport.pick(subscription, ['callback', 'context', 'eventSubscriber', 'eventPublisher', 'once', 'type']);
+      subscriptionData.moduleContext = this;
+      subscriptions[eventName].push(subscriptionData);
+      subscribeLogger(eventName, subscription);
+    }
 
-		/**
-   * Publishes a blinx event
-   * @method
-   * @public
-   * @param eventName {string}
-   * @param message {string}
-   */
-		value: function publish(eventName, message) {
-			var publisher = "";
-			if (arguments.length === 3) {
-				publisher = arguments[0] || "";
-				eventName = arguments[1];
-				message = arguments[2];
-			} else {
-				publisher = utils_defaultExport.getCSSSelector(this);
-			}
-			var subscriptionsForEvent = subscriptions[eventName],
-			    remainingSubscriptions = [];
+    /**
+    * Publishes a blinx event
+    * @method
+    * @public
+    * @param eventName {string}
+    * @param message {string}
+    */
 
-			if (!subscriptionsForEvent) {
-				return;
-			}
+  }, {
+    key: 'publish',
+    value: function publish(eventName, message) {
+      var publisher = '';
+      if (arguments.length === 3) {
+        publisher = arguments[0] || '';
+        eventName = arguments[1];
+        message = arguments[2];
+      } else {
+        publisher = utils_defaultExport.getCSSSelector(this);
+      }
+      var subscriptionsForEvent = subscriptions[eventName],
+          remainingSubscriptions = [];
 
-			publishLogger(eventName, {
-				eventName: eventName,
-				message: message,
-				publisher: publisher,
-				subscription: subscriptionsForEvent
-			});
+      if (!subscriptionsForEvent) {
+        return;
+      }
 
-			// If any of the subscription is of type Replay
-			// Push the message to eventQ
-			var replaySubscriptions = subscriptionsForEvent.filter(function (subs) {
-				if (subs.type === "RE_PLAY") return subs;
-			});
-			if (replaySubscriptions.length) eventQ.store.push({
-				eventName: eventName,
-				message: message,
-				publisher: publisher
-			});
+      publishLogger(eventName, {
+        eventName: eventName,
+        message: message,
+        publisher: publisher,
+        subscription: subscriptionsForEvent
+      });
 
-			subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
+      // If any of the subscription is of type Replay
+      // Push the message to eventQ
+      var replaySubscriptions = subscriptionsForEvent.filter(function (subs) {
+        if (subs.type === 'RE_PLAY') return subs;
+      });
+      if (replaySubscriptions.length) {
+        eventQ.store.push({
+          eventName: eventName,
+          message: message,
+          publisher: publisher
+        });
+      }
 
-				var callback = subscription.callback,
-				    context = subscription.context,
-				    subscribeOnce = subscription.once,
-				    moduleContext = subscription.moduleContext,
-				    subscriptionMatched = false;
+      subscriptionsForEvent && subscriptionsForEvent.length && subscriptionsForEvent.forEach(function (subscription) {
+        var callback = subscription.callback,
+            context = subscription.context,
+            subscribeOnce = subscription.once,
+            moduleContext = subscription.moduleContext,
+            subscriptionMatched = false;
 
-				if (!callback || typeof callback !== "function") {
-					console.error("The callback for the event is invalid");
-					return;
-				}
+        if (!callback || typeof callback !== 'function') {
+          console.error('The callback for the event is invalid');
+          return;
+        }
 
-				if (subscription.eventPublisher) {
-					var regex = new RegExp(subscription.eventPublisher + "$");
-					if (regex.test(publisher)) {
-						subscriptionMatched = true;
-					} else {
+        if (subscription.eventPublisher) {
+          var regex = new RegExp(subscription.eventPublisher + '$');
+          if (regex.test(publisher)) {
+            subscriptionMatched = true;
+          } else {
+            var actualPublisherHierarchy = publisher.split(' '),
+                subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
+                actualPublisherHierarchyLength = actualPublisherHierarchy.length,
+                subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-						var actualPublisherHierarchy = publisher.split(' '),
-						    subscriptionPublisherHierarhcy = subscription.eventPublisher.split(' '),
-						    actualPublisherHierarchyLength = actualPublisherHierarchy.length,
-						    subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+            while (actualPublisherHierarchy.length && subscriptionPublisherHierarhcy.length) {
+              actualPublisherHierarchyLength = actualPublisherHierarchy.length;
+              subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
 
-						while (actualPublisherHierarchy.length && subscriptionPublisherHierarhcy.length) {
+              if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
+                actualPublisherHierarchy.pop();
+                subscriptionPublisherHierarhcy.pop();
+              } else {
+                actualPublisherHierarchy.pop();
+              }
+            }
 
-							actualPublisherHierarchyLength = actualPublisherHierarchy.length;
-							subscriptionPublisherHierarhcyLength = subscriptionPublisherHierarhcy.length;
+            if (!subscriptionPublisherHierarhcy.length) {
+              subscriptionMatched = true;
+            }
+          }
+        }
 
-							if (actualPublisherHierarchy[actualPublisherHierarchyLength - 1] === subscriptionPublisherHierarhcy[subscriptionPublisherHierarhcyLength - 1]) {
-								actualPublisherHierarchy.pop();
-								subscriptionPublisherHierarhcy.pop();
-							} else {
-								actualPublisherHierarchy.pop();
-							}
-						}
+        if (!subscription.eventPublisher || subscriptionMatched) {
+          // If replay event: publish only after render is complete
+          // If replay event: publish all the data matched from event queue
+          var publishData = message;
 
-						if (!subscriptionPublisherHierarhcy.length) {
-							subscriptionMatched = true;
-						}
-					}
-				}
+          if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == 'KEEP_ON') {
+            callback.call(context || null, publishData);
+          }
 
-				if (!subscription.eventPublisher || subscriptionMatched) {
+          if (subscribeOnce) {
+            subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
+              return sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName;
+            });
+          }
+        }
+      });
+    }
 
-					// If replay event: publish only after render is complete
-					// If replay event: publish all the data matched from event queue
-					var publishData = message;
+    /**
+    * unsubscribes a blinx event
+    * @public
+    * @param subscriber {Object} the reference of the module which had subscribed the event earlier
+    * @param eventName {string}
+    * @param callback {function} the callback method to be unsubscribed
+    */
 
-					if (isModuleRendered(moduleContext) || checkIfModuleHasInitOn(moduleContext, eventName) || isGlobalPubsub(moduleContext) || subscription.type == "KEEP_ON") {
-						callback.call(context ? context : null, publishData);
-					}
+  }, {
+    key: 'unsubscribe',
+    value: function unsubscribe(subscriber, eventName, callback) {
+      var subscriptionsForEvent = subscriptions[eventName];
+      if (!subscriptionsForEvent) {
+        return;
+      }
 
-					if (subscribeOnce) {
-						subscriptions[eventName] = subscriptions[eventName].filter(function (sub) {
-							return sub.eventSubscriber !== subscription.eventSubscriber && sub.eventName !== subscription.eventName;
-						});
-					}
-				}
-			});
-		}
-	}, {
-		key: "unsubscribe",
+      // Check if any RE_PLAY event is there and all the event context is of is same as
+      // destroy its data from eventQ
+      var replaySubscriptions = subscriptionsForEvent.filter(function (subscription) {
+        if (subscription.type === 'RE_PLAY') return subscription;
+      });
 
+      subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
+        return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
+      });
 
-		/**
-   * unsubscribes a blinx event
-   * @public
-   * @param subscriber {Object} the reference of the module which had subscribed the event earlier
-   * @param eventName {string}
-   * @param callback {function} the callback method to be unsubscribed
-   */
-		value: function unsubscribe(subscriber, eventName, callback) {
+      unsubscribeLogger(eventName, subscriptionsForEvent);
 
-			var subscriptionsForEvent = subscriptions[eventName];
-			if (!subscriptionsForEvent) {
-				return;
-			}
+      if (replaySubscriptions.length) {
+        if (!subscriptions[eventName].length) {
+          // Remove all the items from eventQ with eventName
+          eventQ.store = eventQ.store.filter(function (evt) {
+            if (evt.eventName !== eventName) return evt;
+          });
+        }
+      }
+    }
 
-			// Check if any RE_PLAY event is there and all the event context is of is same as
-			// destroy its data from eventQ
-			var replaySubscriptions = subscriptionsForEvent.filter(function (subscription) {
-				if (subscription.type === "RE_PLAY") return subscription;
-			});
+    /**
+    * For internal use
+    * This method is currently used to check is the event occured via Pub sub or a module
+    * @returns {string}
+       */
 
-			subscriptions[eventName] = subscriptionsForEvent.filter(function (subscription) {
-				return !(subscription.callback === callback && subscription.eventSubscriber === subscriber);
-			});
+  }, {
+    key: 'getInstanceName',
+    value: function getInstanceName() {
+      return 'PUBSUB';
+    }
+  }]);
 
-			unsubscribeLogger(eventName, subscriptionsForEvent);
-
-			if (replaySubscriptions.length) {
-
-				if (!subscriptions[eventName].length) {
-					// Remove all the items from eventQ with eventName
-					eventQ.store = eventQ.store.filter(function (evt) {
-						if (evt.eventName !== eventName) return evt;
-					});
-				}
-			}
-		}
-	}, {
-		key: "getInstanceName",
-
-
-		/**
-   * For internal use
-   * This method is currently used to check is the event occured via Pub sub or a module
-   * @returns {string}
-      */
-		value: function getInstanceName() {
-			return "PUBSUB";
-		}
-	}]);
-
-	return PubSub;
+  return PubSub;
 }();
 
 /* harmony default export */ var pubsub_defaultExport = (pubsub_PubSub);
@@ -570,457 +557,453 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  * @module Module
  */
 var module_Module = function () {
-    var modulePrivateData = new WeakMap();
+  var modulePrivateData = new WeakMap();
 
-    /**
+  /**
      * @class
-    * All the modules created by this framework will be extended by this Module.
+  * All the modules created by this framework will be extended by this Module.
      * @extends {@link PubSub}
      */
 
-    var Module = function (_PubSub) {
-        _inherits(Module, _PubSub);
+  var Module = function (_PubSub) {
+    _inherits(Module, _PubSub);
 
-        module__createClass(Module, [{
-            key: "$proxyHandler",
+    module__createClass(Module, [{
+      key: '$proxyHandler',
 
 
-            // ***
-            // Observer
-            value: function $proxyHandler() {
-                var ctx = this;
-                var _callObservingMethods = function _callObservingMethods() {
-                    setTimeout(function () {
-                        ctx.$_observerFns.forEach(function (fnObj) {
-                            if (Array.isArray(fnObj.deps)) {
+      // ***
+      // Observer
+      value: function $proxyHandler() {
+        var ctx = this;
+        var _callObservingMethods = function _callObservingMethods() {
+          setTimeout(function () {
+            ctx.$_observerFns.forEach(function (fnObj) {
+              if (Array.isArray(fnObj.deps)) {
+                // Dont trigger if adjacent node/sibling node has changed
+                var pathArray = path.split('=');
+                var depsMatched = fnObj.deps.find(function (deps) {
+                  var depsArr = deps.split('.');
 
-                                // Dont trigger if adjacent node/sibling node has changed
-                                var pathArray = path.split("=");
-                                var depsMatched = fnObj.deps.find(function (deps) {
-                                    var depsArr = deps.split(".");
+                  if (__WEBPACK_IMPORTED_MODULE_0_lodash_fp__["isEqual"](depsArr, pathArray)) return true;
 
-                                    if (__WEBPACK_IMPORTED_MODULE_0_lodash_fp__["isEqual"](depsArr, pathArray)) return true;
+                  if (pathArray.length < depsArr.length) {
+                    var pathLastIndex = pathArray.length - 1;
 
-                                    if (pathArray.length < depsArr.length) {
-                                        var pathLastIndex = pathArray.length - 1;
+                    if (__WEBPACK_IMPORTED_MODULE_0_lodash_fp__["isEqual"](pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
+                  }
 
-                                        if (__WEBPACK_IMPORTED_MODULE_0_lodash_fp__["isEqual"](pathArray[pathLastIndex], depsArr[pathLastIndex])) return true;
-                                    }
-
-                                    if (pathArray.length <= depsArr.length) {
-                                        return pathArray.find(function (keyItem, index) {
-                                            return depsArr[index] !== keyItem;
-                                        });
-                                    }
-                                });
-
-                                depsMatched ? fnObj.fn.call(ctx) : undefined;
-                            } else {
-                                fnObj.fn.call(ctx);
-                            }
-                        });
+                  if (pathArray.length <= depsArr.length) {
+                    return pathArray.find(function (keyItem, index) {
+                      return depsArr[index] !== keyItem;
                     });
-                };
-                return {
-                    get: function get(target, prop, receiver) {
-                        try {
-                            return Module.isObject(target[prop]) && "__value" in target[prop] ? target[prop].__value : target[prop];
-                        } catch (err) {
-                            return undefined;
-                        }
-                    },
-                    set: function set(target, name, value) {
-
-                        if (Array.isArray(target) && name === "length") {
-                            target.length = value;
-                            return target;
-                        }
-
-                        var path = void 0;
-
-                        // Dont set meta data for meta fields
-                        if (name === "__path" || name === "__value") {
-                            target[name] = value;
-                            return target;
-                        }
-
-                        path = target.__path ? target.__path + "=" + name : name;
-
-                        // Set values
-                        if (Module.isObject(value)) {
-                            target[name] = new Proxy(value, ctx.$proxyHandler());
-                        } else {
-                            target[name] = {
-                                __value: value
-                            };
-                        }
-                        Object.defineProperty(target[name], '__path', {
-                            enumerable: false,
-                            value: path
-                        });
-
-                        // Call
-                        _callObservingMethods();
-
-                        return target;
-                    },
-                    deleteProperty: function deleteProperty(target, property) {
-                        var x = void 0;
-                        if (Module.isObject(target) || Array.isArray(target)) {
-                            x = delete target[property];
-                        }
-                        _callObservingMethods();
-                        return x;
-                    },
-                    has: function has(target, prop) {
-                        try {
-                            return (Module.isObject(target) || Array.isArray(target)) && target[prop];
-                        } catch (err) {
-                            return false;
-                        }
-                    }
-                };
-            }
-
-            /**
-             * @constructor
-             * @param name
-             * @param moduleName {string} the name of the module
-             * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
-             * @param instanceConfig the configuration of the module passed
-                   * @param instanceData It is the reference of module
-                   * @param meta
-                   */
-
-        }], [{
-            key: "isObject",
-            value: function isObject(x) {
-                return x != null && (typeof x === "undefined" ? "undefined" : module__typeof(x)) === 'object';
-            }
-        }, {
-            key: "getDependencies",
-            value: function getDependencies(fnStr) {
-
-                // Return if ._ is used directly
-                if (fnStr.match(/\._[^.]/g)) {
-                    return "*";
-                }
-
-                var matched = fnStr.match(/\._\.((\S)*[a-zA-Z0-9_$])/g),
-                    matchAll = "*";
-
-                // If any dependency is not found, trigger all the time.
-                if (!matched || matched.length === 0) {
-                    return matchAll;
-                }
-
-                matched = matched.map(function (match) {
-                    var splitted = match.split("._.");
-                    return splitted[1] || splitted[0];
+                  }
                 });
 
-                // If any evaluated dependency is present at root level
-                var evaluatedDependencyAtRoot = matched.find(function (match) {
-                    return match.startsWith("._[");
-                });
-                if (evaluatedDependencyAtRoot) {
-                    return matchAll;
-                }
-
-                matched = matched.map(function (match) {
-                    return match.split("[")[0];
-                });
-
-                return matched;
+                depsMatched ? fnObj.fn.call(ctx) : undefined;
+              } else {
+                fnObj.fn.call(ctx);
+              }
+            });
+          });
+        };
+        return {
+          get: function get(target, prop, receiver) {
+            try {
+              return Module.isObject(target[prop]) && '__value' in target[prop] ? target[prop].__value : target[prop];
+            } catch (err) {
+              return undefined;
             }
-        }]);
-
-        function Module(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
-            module__classCallCheck(this, Module);
-
-            var _this = _possibleConstructorReturn(this, (Module.__proto__ || Object.getPrototypeOf(Module)).call(this));
-
-            _this.moduleName = moduleName;
-            _this.name = name;
-            _this.lifeCycleFlags = module__extends({}, lifeCycleFlags);
-            _this.instanceConfig = instanceConfig;
-            _this.modulePlaceholders = _this.instanceConfig.placeholders;
-            _this.createChildInstance = createInstance.bind(_this);
-            _this.meta = meta;
-
-            for (var key in instanceData) {
-                _this[key] = instanceData[key];
+          },
+          set: function set(target, name, value) {
+            if (Array.isArray(target) && name === 'length') {
+              target.length = value;
+              return target;
             }
 
-            modulePrivateData.set(_this, {
-                moduleSubscriptions: [],
-                uniqueId: meta.id
+            var path = void 0;
+
+            // Dont set meta data for meta fields
+            if (name === '__path' || name === '__value') {
+              target[name] = value;
+              return target;
+            }
+
+            path = target.__path ? target.__path + '=' + name : name;
+
+            // Set values
+            if (Module.isObject(value)) {
+              target[name] = new Proxy(value, ctx.$proxyHandler());
+            } else {
+              target[name] = {
+                __value: value
+              };
+            }
+            Object.defineProperty(target[name], '__path', {
+              enumerable: false,
+              value: path
             });
 
-            // Apply middleware, PRE:_Create
-            middleWareFns.forEach(function (middlewareFn) {
-                module__extends(_this, middlewareFn(_this));
-            });
+            // Call
+            _callObservingMethods();
 
-            // Observable proxy setup
-            _this.$_observerFns = [];
-            _this.observe_For && _this.observe_For.forEach(function (fnName) {
-                if (!_this[fnName] || typeof _this[fnName] !== "function") {
-                    console.error("{fnName} is not available over module. Can be observed.");
-                    return;
-                }
-                var fnObj = {
-                    fn: _this[fnName],
-                    deps: Module.getDependencies(String(_this[fnName]))
-                };
+            return target;
+          },
+          deleteProperty: function deleteProperty(target, property) {
+            var x = void 0;
+            if (Module.isObject(target) || Array.isArray(target)) {
+              x = delete target[property];
+            }
+            _callObservingMethods();
+            return x;
+          },
+          has: function has(target, prop) {
+            try {
+              return (Module.isObject(target) || Array.isArray(target)) && target[prop];
+            } catch (err) {
+              return false;
+            }
+          }
+        };
+      }
 
-                _this.$_observerFns.push(fnObj);
-            });
+      /**
+      * @constructor
+      * @param name
+      * @param moduleName {string} the name of the module
+      * @param lifeCycleFlags {lifeCycleFlags} the initial value of the lifecycle flags
+      * @param instanceConfig the configuration of the module passed
+           * @param instanceData It is the reference of module
+           * @param meta
+           */
 
-            _this._ = new Proxy({}, _this.$proxyHandler());
-            return _this;
+    }], [{
+      key: 'isObject',
+      value: function isObject(x) {
+        return x != null && (typeof x === 'undefined' ? 'undefined' : module__typeof(x)) === 'object';
+      }
+    }, {
+      key: 'getDependencies',
+      value: function getDependencies(fnStr) {
+        // Return if ._ is used directly
+        if (fnStr.match(/\._[^.]/g)) {
+          return '*';
         }
 
-        /**
-        * @method
+        var matched = fnStr.match(/\._\.((\S)*[a-zA-Z0-9_$])/g),
+            matchAll = '*';
+
+        // If any dependency is not found, trigger all the time.
+        if (!matched || matched.length === 0) {
+          return matchAll;
+        }
+
+        matched = matched.map(function (match) {
+          var splitted = match.split('._.');
+          return splitted[1] || splitted[0];
+        });
+
+        // If any evaluated dependency is present at root level
+        var evaluatedDependencyAtRoot = matched.find(function (match) {
+          return match.startsWith('._[');
+        });
+        if (evaluatedDependencyAtRoot) {
+          return matchAll;
+        }
+
+        matched = matched.map(function (match) {
+          return match.split('[')[0];
+        });
+
+        return matched;
+      }
+    }]);
+
+    function Module(name, moduleName, lifeCycleFlags, instanceConfig, instanceData, meta) {
+      module__classCallCheck(this, Module);
+
+      var _this = _possibleConstructorReturn(this, (Module.__proto__ || Object.getPrototypeOf(Module)).call(this));
+
+      _this.moduleName = moduleName;
+      _this.name = name;
+      _this.lifeCycleFlags = module__extends({}, lifeCycleFlags);
+      _this.instanceConfig = instanceConfig;
+      _this.modulePlaceholders = _this.instanceConfig.placeholders;
+      _this.createChildInstance = createInstance.bind(_this);
+      _this.meta = meta;
+
+      for (var key in instanceData) {
+        _this[key] = instanceData[key];
+      }
+
+      modulePrivateData.set(_this, {
+        moduleSubscriptions: [],
+        uniqueId: meta.id
+      });
+
+      // Apply middleware, PRE:_Create
+      middleWareFns.forEach(function (middlewareFn) {
+        module__extends(_this, middlewareFn(_this));
+      });
+
+      // Observable proxy setup
+      _this.$_observerFns = [];
+      _this.observe_For && _this.observe_For.forEach(function (fnName) {
+        if (!_this[fnName] || typeof _this[fnName] !== 'function') {
+          console.error('{fnName} is not available over module. Can be observed.');
+          return;
+        }
+        var fnObj = {
+          fn: _this[fnName],
+          deps: Module.getDependencies(String(_this[fnName]))
+        };
+
+        _this.$_observerFns.push(fnObj);
+      });
+
+      _this._ = new Proxy({}, _this.$proxyHandler());
+      return _this;
+    }
+
+    /**
+    * @method
          * renders the template using placeholder
          * @param placeholderData : The placeholder data for creation of template
          */
 
 
-        module__createClass(Module, [{
-            key: "render",
-            value: function render(placeholderData) {
+    module__createClass(Module, [{
+      key: 'render',
+      value: function render(placeholderData) {
+        var containerSelector = this.getUniqueId();
+        var placeholders = placeholderData || this.instanceConfig.placeholders;
 
-                var containerSelector = this.getUniqueId();
-                var placeholders = placeholderData || this.instanceConfig.placeholders;
+        if (!this.template) return;
 
-                if (!this.template) return;
+        document.querySelector('#' + containerSelector).innerHTML = this.template(placeholders);
+      }
 
-                document.querySelector("#" + containerSelector).innerHTML = this.template(placeholders);
+      /**
+      * @method
+           * gets all the events of all types subscribed by the module
+           * @returns {array} array of subscriptions
+           */
+
+    }, {
+      key: 'getAllSubscriptions',
+      value: function getAllSubscriptions() {
+        return modulePrivateData.get(this).moduleSubscriptions;
+      }
+
+      /**
+      * @method
+           * gets the unique id of the module
+           * @returns {string}
+           */
+
+    }, {
+      key: 'getUniqueId',
+      value: function getUniqueId() {
+        return modulePrivateData.get(this).uniqueId;
+      }
+
+      /**
+      * @method
+           * gets the unique id  of the parent element
+           * @returns {string}
+           */
+
+    }, {
+      key: 'getParentInstanceId',
+      value: function getParentInstanceId() {
+        if (this.meta.parent) {
+          return this.meta.parent.id;
+        }
+
+        return '';
+      }
+
+      /**
+      * @method
+      *
+      * @returns {string}
+           */
+
+    }, {
+      key: 'getModuleContainer',
+      value: function getModuleContainer() {
+        return '#' + this.getUniqueId();
+      }
+
+      /**
+      *
+      * @method
+      * @returns {string|*}
+           */
+
+    }, {
+      key: 'getModuleName',
+      value: function getModuleName() {
+        return this.moduleName;
+      }
+
+      /**
+      *
+      * @method
+      * @returns {*}
+           */
+
+    }, {
+      key: 'getInstanceConfig',
+      value: function getInstanceConfig() {
+        return this.instanceConfig.placeholders;
+      }
+
+      /**
+      *
+      * @method
+      * @returns {*}
+           */
+
+    }, {
+      key: 'getCSSSelector',
+      value: function getCSSSelector() {
+        return utils_defaultExport.getCSSSelector(this, moduleS);
+      }
+
+      /**
+      *
+      * @method
+      */
+
+    }, {
+      key: 'destroy',
+      value: function destroy() {}
+
+      /**
+      *
+      * @method
+      * @param subscription
+      * @param eventName
+           */
+
+    }, {
+      key: 'subscribe',
+      value: function subscribe(subscription) {
+        var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
+
+        subscription.eventSubscriber = this.getModuleContainer();
+        modulePrivateData.get(this).moduleSubscriptions.push(subscription);
+        _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), 'subscribe', this).call(this, subscription, eventName);
+      }
+
+      /**
+      *
+      * @method
+      * @param eventName
+      * @param message
+           */
+
+    }, {
+      key: 'publish',
+      value: function publish(eventName, message) {
+        _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), 'publish', this).call(this, eventName, message);
+      }
+
+      /**
+      *
+      * @method
+      */
+
+    }, {
+      key: 'dequeueEvents',
+      value: function dequeueEvents() {
+        var moduleSubscriptions = this.getAllSubscriptions();
+        eventQ.store.forEach(function (evt) {
+          var queuedEvent = moduleSubscriptions.filter(function (event) {
+            if (evt.eventName === event.eventName && event.type === 'RE_PLAY') {
+              return event;
             }
-        }, {
-            key: "getAllSubscriptions",
+          });
+          queuedEvent.forEach(function (event) {
+            event.callback && event.callback.call(event.context ? event.context : null, evt.message);
+          });
+        });
+      }
+
+      /**
+      *
+      * @method
+      * @param eventName
+      * @param callback
+           */
+
+    }, {
+      key: 'unsubscribe',
+      value: function unsubscribe(eventName, callback) {
+        if ((typeof eventName === 'undefined' ? 'undefined' : module__typeof(eventName)) === 'object') {
+          callback = eventName.callback;
+          eventName = eventName.eventName;
+        }
+        _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), 'unsubscribe', this).call(this, this.getModuleContainer(), eventName, callback);
+      }
+
+      /**
+      * @method
+      * actual rendering happens here. Puts the wrapper for the module and adds it to the container.
+      * @param module {Object}
+      * @param compiledHTML
+           * @returns {*}
+           */
+
+    }, {
+      key: 'getInstanceName',
 
 
-            /**
-            * @method
-             * gets all the events of all types subscribed by the module
-             * @returns {array} array of subscriptions
-             */
-            value: function getAllSubscriptions() {
-                return modulePrivateData.get(this).moduleSubscriptions;
-            }
-        }, {
-            key: "getUniqueId",
+      /**
+      * For internal use
+      * This method is currently used to check is the event occured via Pub sub or a module
+      * @returns {string}
+      */
+      value: function getInstanceName() {
+        return 'MODULE';
+      }
+    }], [{
+      key: 'createModuleArena',
+      value: function createModuleArena(module, compiledHTML) {
+        // If compiledHTML is not provided, start creating dom element progressively.
+        var themeClass = '';
 
+        if (module.instanceConfig.moduleClassName) {
+          themeClass = module.instanceConfig.theme ? module.instanceConfig.moduleClassName + '-' + module.instanceConfig.theme : module.instanceConfig.moduleClassName + '-default';
+        } else {
+          themeClass = module.instanceConfig.theme ? module.moduleName + '-' + module.instanceConfig.theme : module.moduleName + '-default';
+        }
 
-            /**
-            * @method
-             * gets the unique id of the module
-             * @returns {string}
-             */
-            value: function getUniqueId() {
-                return modulePrivateData.get(this).uniqueId;
-            }
-        }, {
-            key: "getParentInstanceId",
+        if (typeof compiledHTML !== 'string') {
+          document.querySelector(module.instanceConfig.container).innerHTML = '<div id="' + module.getUniqueId() + '" class="' + themeClass + ' play-arena"></div>';
+          return;
+        }
 
+        // If compiledHTML is provided, create page string.
+        if (compiledHTML.trim() === '') {
+          compiledHTML = '<div id="' + module.getUniqueId() + '"></div>';
+        } else {}
 
-            /**
-            * @method
-             * gets the unique id  of the parent element
-             * @returns {string}
-             */
-            value: function getParentInstanceId() {
-                if (this.meta.parent) {
-                    return this.meta.parent.id;
-                }
-
-                return "";
-            }
-        }, {
-            key: "getModuleContainer",
-
-
-            /**
-             * @method
-             *
-             * @returns {string}
-                   */
-            value: function getModuleContainer() {
-                return "#" + this.getUniqueId();
-            }
-        }, {
-            key: "getModuleName",
-
-
-            /**
-             *
-             * @method
-             * @returns {string|*}
-                   */
-            value: function getModuleName() {
-                return this.moduleName;
-            }
-        }, {
-            key: "getInstanceConfig",
-
-
-            /**
-             *
-             * @method
-             * @returns {*}
-                   */
-            value: function getInstanceConfig() {
-                return this.instanceConfig.placeholders;
-            }
-        }, {
-            key: "getCSSSelector",
-
-
-            /**
-             *
-             * @method
-             * @returns {*}
-                   */
-            value: function getCSSSelector() {
-                return utils_defaultExport.getCSSSelector(this, moduleS);
-            }
-        }, {
-            key: "destroy",
-
-
-            /**
-             *
-             * @method
-             */
-            value: function destroy() {}
-        }, {
-            key: "subscribe",
-
-
-            /**
-             *
-             * @method
-             * @param subscription
-             * @param eventName
-                   */
-            value: function subscribe(subscription) {
-                var eventName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : subscription.eventName;
-
-                subscription.eventSubscriber = this.getModuleContainer();
-                modulePrivateData.get(this).moduleSubscriptions.push(subscription);
-                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "subscribe", this).call(this, subscription, eventName);
-            }
-        }, {
-            key: "publish",
-
-
-            /**
-             *
-             * @method
-             * @param eventName
-             * @param message
-                   */
-            value: function publish(eventName, message) {
-                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "publish", this).call(this, eventName, message);
-            }
-        }, {
-            key: "dequeueEvents",
-
-
-            /**
-             *
-             * @method
-             */
-            value: function dequeueEvents() {
-                var moduleSubscriptions = this.getAllSubscriptions();
-                eventQ.store.forEach(function (evt) {
-                    var queuedEvent = moduleSubscriptions.filter(function (event) {
-                        if (evt.eventName === event.eventName && event.type === "RE_PLAY") {
-                            return event;
-                        }
-                    });
-                    queuedEvent.forEach(function (event) {
-                        event.callback && event.callback.call(event.context ? event.context : null, evt.message);
-                    });
-                });
-            }
-        }, {
-            key: "unsubscribe",
-
-
-            /**
-             *
-             * @method
-             * @param eventName
-             * @param callback
-                   */
-            value: function unsubscribe(eventName, callback) {
-                if ((typeof eventName === "undefined" ? "undefined" : module__typeof(eventName)) === "object") {
-                    callback = eventName.callback;
-                    eventName = eventName.eventName;
-                }
-                _get(Module.prototype.__proto__ || Object.getPrototypeOf(Module.prototype), "unsubscribe", this).call(this, this.getModuleContainer(), eventName, callback);
-            }
-        }, {
-            key: "getInstanceName",
-
-
-            /**
-             * For internal use
-             * This method is currently used to check is the event occured via Pub sub or a module
-             * @returns {string}
-             */
-            value: function getInstanceName() {
-                return "MODULE";
-            }
-        }], [{
-            key: "createModuleArena",
-
-
-            /**
-             * @method
-             * actual rendering happens here. Puts the wrapper for the module and adds it to the container.
-             * @param module {Object}
-             * @param compiledHTML
-                   * @returns {*}
-                   */
-            value: function createModuleArena(module, compiledHTML) {
-                // If compiledHTML is not provided, start creating dom element progressively.
-                var themeClass = "";
-
-                if (module.instanceConfig.moduleClassName) {
-                    themeClass = module.instanceConfig.theme ? module.instanceConfig.moduleClassName + '-' + module.instanceConfig.theme : module.instanceConfig.moduleClassName + '-default';
-                } else {
-                    themeClass = module.instanceConfig.theme ? module.moduleName + '-' + module.instanceConfig.theme : module.moduleName + '-default';
-                }
-
-                if (typeof compiledHTML !== "string") {
-                    document.querySelector(module.instanceConfig.container).innerHTML = "<div id=\"" + module.getUniqueId() + "\" class=\"" + themeClass + " play-arena\"></div>";
-                    return;
-                }
-
-                // If compiledHTML is provided, create page string.
-                if (compiledHTML.trim() === "") {
-                    compiledHTML = "<div id=\"" + module.getUniqueId() + "\"></div>";
-                } else {}
-
-                return compiledHTML;
-            }
-        }]);
-
-        return Module;
-    }(pubsub_defaultExport);
+        return compiledHTML;
+      }
+    }]);
 
     return Module;
+  }(pubsub_defaultExport);
+
+  return Module;
 }();
 
 /* harmony default export */ var module_defaultExport = (module_Module);
 // CONCATENATED MODULE: ./src/constants.js
 /* harmony default export */ var constants_defaultExport = ({
-	/**
+		/**
   * <ul>
   *<li> EVENT_ENUM: ENUM constant for the types of events
   *<li>"KEEP_ON": The event will be listened even when the module has not been rendered.
@@ -1029,13 +1012,13 @@ var module_Module = function () {
   * to the event once the rendering completes.
   * </ul>
   */
-	EVENT_ENUM: {
-		keepOn: "KEEP_ON",
-		replay: "RE_PLAY",
-		playAfterRender: "PLAY_AFTER_RENDER"
-	},
+		EVENT_ENUM: {
+				keepOn: 'KEEP_ON',
+				replay: 'RE_PLAY',
+				playAfterRender: 'PLAY_AFTER_RENDER'
+		},
 
-	/**
+		/**
   * Based on the module lifecycle. The following events occur
   * <ul>
   *<li> 1) resolveRenderOn: event occurs just before resolveRenderOn method is called
@@ -1046,14 +1029,14 @@ var module_Module = function () {
   *<li> 5) destroy: event occurs when module is destroyed.
   * </ul>
   */
-	MODULE_EVENTS: {
-		resolveRenderOn: "resolveRenderOn",
-		render: "render",
-		onRenderComplete: "onRenderComplete",
-		onStatusChange: "__onStatusChange",
-		destroy: "destroy"
-	},
-	/**
+		MODULE_EVENTS: {
+				resolveRenderOn: 'resolveRenderOn',
+				render: 'render',
+				onRenderComplete: 'onRenderComplete',
+				onStatusChange: '__onStatusChange',
+				destroy: 'destroy'
+		},
+		/**
   *
   * LIFECYCLE EVENTS LIST:
   * <ul>
@@ -1066,17 +1049,17 @@ var module_Module = function () {
   *<li>7)"LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
   * </ul>
   */
-	onStatusChange_EVENTS: {
-		onCreate: "LIFECYCLE:CREATED",
-		keepOnReplaySubscribed: "LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED",
-		initOnSubscribed: "LIFECYCLE:INIT_ON_SUBSCRIBED",
-		resolveRenderOnCalled: "LIFECYCLE:RESOLVE_RENDER_ON_CALLED",
-		listensToPlayAfterRenderSubscribed: "LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED",
-		renderCalled: "LIFECYCLE:ON_RENDER_CALLED",
-		onRenderCompleteCalled: "LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED"
-	},
+		onStatusChange_EVENTS: {
+				onCreate: 'LIFECYCLE:CREATED',
+				keepOnReplaySubscribed: 'LIFECYCLE:KEEP_ON_&_REPLAY_SUBSCRIBED',
+				initOnSubscribed: 'LIFECYCLE:INIT_ON_SUBSCRIBED',
+				resolveRenderOnCalled: 'LIFECYCLE:RESOLVE_RENDER_ON_CALLED',
+				listensToPlayAfterRenderSubscribed: 'LIFECYCLE:LISTENS_TO_PLAY_AFTER_RENDER_SUBSCRIBED',
+				renderCalled: 'LIFECYCLE:ON_RENDER_CALLED',
+				onRenderCompleteCalled: 'LIFECYCLE:ON_RENDER_CAOMPLETE_CALLED'
+		},
 
-	/**
+		/**
   * @readonly
   * @private
   * @constant {Object} lifeCycleFlags following fields
@@ -1086,11 +1069,11 @@ var module_Module = function () {
   * <li>preRenderResolved: false</li>
   * </ul>
   */
-	lifeCycleFlags: {
-		booted: true,
-		preRenderResolved: false,
-		rendered: false
-	}
+		lifeCycleFlags: {
+				booted: true,
+				preRenderResolved: false,
+				rendered: false
+		}
 });
 // CONCATENATED MODULE: ./src/devtool.js
 /**
@@ -1098,61 +1081,65 @@ var module_Module = function () {
  */
 
 var attachListener = function attachListener(moduleObject) {
-	document.addEventListener("content-script-to-blinx", function (event) {
-		var message;
-		var moduleData = function moduleData() {
-			var returnObject = [];
-			//var objectToParse = _store.moduleS;
-			var objectToParse = moduleObject();
-			objectToParse.forEach(function (module, moduleIndex) {
-				var subModulesArray = function subModulesArray(thisModule) {
-					if (!thisModule.config || !thisModule.config.modules) return [];else {
-						var returnArr = [];
-						thisModule.config.modules.forEach(function (subModule, subModuleIndex) {
-							returnArr.push({ "moduleName": subModule.moduleName,
-								"moduleConfig": {
-									"container": subModule.instanceConfig.container,
-									"listensTo": subModule.instanceConfig.listensTo,
-									"placeholders": JSON.stringify(subModule.instanceConfig.placeholders)
-								},
-								"subModules": subModulesArray(subModule),
-								"moduleInstanceConfig": JSON.stringify(subModule.instanceConfig) });
-						});
-						return returnArr;
-					}
-				};
-				var moduleObj = {
-					"moduleName": module.moduleName,
-					"moduleConfig": {
-						"container": module.instanceConfig.container,
-						"listensTo": module.instanceConfig.listensTo,
-						"placeholders": JSON.stringify(module.instanceConfig.placeholders)
-					},
-					"subModules": subModulesArray(module),
-					"moduleInstanceConfig": JSON.stringify(module.instanceConfig)
-				};
-				returnObject.push(moduleObj);
-			});
-			return returnObject;
-		};
+  document.addEventListener('content-script-to-blinx', function (event) {
+    var message = void 0;
+    var moduleData = function moduleData() {
+      var returnObject = [];
+      // var objectToParse = _store.moduleS;
+      var objectToParse = moduleObject();
+      objectToParse.forEach(function (module, moduleIndex) {
+        var subModulesArray = function subModulesArray(thisModule) {
+          if (!thisModule.config || !thisModule.config.modules) {
+            return [];
+          }
 
-		switch (event.detail.eventId) {
-			case "GET_MODULES":
-				message = { "eventId": "GET_MODULES_REPONSE", "data": moduleData() };
-				break;
-		}
-		var event = new CustomEvent("blinx-to-content-script", { bubbles: true, detail: message });
-		document.dispatchEvent(event);
-	});
+          var returnArr = [];
+          thisModule.config.modules.forEach(function (subModule, subModuleIndex) {
+            returnArr.push({
+              moduleName: subModule.moduleName,
+              moduleConfig: {
+                container: subModule.instanceConfig.container,
+                listensTo: subModule.instanceConfig.listensTo,
+                placeholders: JSON.stringify(subModule.instanceConfig.placeholders)
+              },
+              subModules: subModulesArray(subModule),
+              moduleInstanceConfig: JSON.stringify(subModule.instanceConfig)
+            });
+          });
+          return returnArr;
+        };
+        var moduleObj = {
+          moduleName: module.moduleName,
+          moduleConfig: {
+            container: module.instanceConfig.container,
+            listensTo: module.instanceConfig.listensTo,
+            placeholders: JSON.stringify(module.instanceConfig.placeholders)
+          },
+          subModules: subModulesArray(module),
+          moduleInstanceConfig: JSON.stringify(module.instanceConfig)
+        };
+        returnObject.push(moduleObj);
+      });
+      return returnObject;
+    };
+
+    switch (event.detail.eventId) {
+      case 'GET_MODULES':
+        message = { eventId: 'GET_MODULES_REPONSE', data: moduleData() };
+        break;
+    }
+    var event = new CustomEvent('blinx-to-content-script', { bubbles: true, detail: message });
+    document.dispatchEvent(event);
+  });
 };
 
 /* harmony default export */ var devtool_defaultExport = ({
-	attachListener: attachListener
+  attachListener: attachListener
 });
 // CONCATENATED MODULE: ./src/blinx.js
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_fp__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_fp___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_lodash_fp__);
-/**This is the major framework file.
+/** This is the major framework file.
  * @exports {
  * 	createInstance: creates a new instance of the module.
  * 	destroyModuleInstance: destroys the module instance,
@@ -1175,10 +1162,9 @@ var attachListener = function attachListener(moduleObject) {
  * @private
  */
 var blinx__onBreath = function _onBreath(module, eventName) {
-
-	if (module[constants_defaultExport.MODULE_EVENTS.onStatusChange]) {
-		module[constants_defaultExport.MODULE_EVENTS.onStatusChange](eventName);
-	}
+  if (module[constants_defaultExport.MODULE_EVENTS.onStatusChange]) {
+    module[constants_defaultExport.MODULE_EVENTS.onStatusChange](eventName);
+  }
 };
 
 /**
@@ -1188,10 +1174,9 @@ var blinx__onBreath = function _onBreath(module, eventName) {
  * @private
  */
 var _emitLifeCycleEvent = function _emitLifeCycleEvent(moduleDetail, eventName) {
-
-	moduleDetail.publish("" + moduleDetail.getModuleName() + eventName, {
-		moduleInstanceId: moduleDetail.getUniqueId()
-	});
+  moduleDetail.publish('' + moduleDetail.getModuleName() + eventName, {
+    moduleInstanceId: moduleDetail.getUniqueId()
+  });
 };
 
 /**
@@ -1203,14 +1188,11 @@ var _emitLifeCycleEvent = function _emitLifeCycleEvent(moduleDetail, eventName) 
  * @private
  */
 var _listenForInitOn = function _listenForInitOn(module) {
+  if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
+    return Promise.resolve(module.path);
+  }
 
-	if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
-
-		return Promise.resolve(module.path);
-	} else {
-
-		return blinx__callResolveRenderOn(module);
-	}
+  return blinx__callResolveRenderOn(module);
 };
 
 // STEP:2
@@ -1224,31 +1206,26 @@ var _listenForInitOn = function _listenForInitOn(module) {
  * @private
  */
 var blinx__callResolveRenderOn = function _callResolveRenderOn(module, data) {
+  module_defaultExport.createModuleArena(module);
 
-	module_defaultExport.createModuleArena(module);
+  if (module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn]) {
+    var moduleResoved = module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn](data);
+    if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === 'function') {
+      var onPromiseComplete = function onPromiseComplete(res) {
+        module.lifeCycleFlags.preRenderResolved = true;
+        blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
+        return blinx__lockEvents(module, res);
+      };
 
-	if (module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn]) {
+      return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
+    }
 
-		var moduleResoved = module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn](data);
-		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === "function") {
+    blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
+    return blinx__lockEvents(module, moduleResoved);
+  }
 
-			var onPromiseComplete = function onPromiseComplete(res) {
-				module.lifeCycleFlags.preRenderResolved = true;
-				blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
-				return blinx__lockEvents(module, res);
-			};
-
-			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
-		} else {
-
-			blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
-			return blinx__lockEvents(module, moduleResoved);
-		}
-	} else {
-
-		blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
-		return blinx__lockEvents(module, data);
-	}
+  blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
+  return blinx__lockEvents(module, data);
 };
 
 // STEP:3 [Hot events]
@@ -1259,26 +1236,22 @@ var blinx__callResolveRenderOn = function _callResolveRenderOn(module, data) {
  * @private
  */
 var blinx__lockEvents = function _lockEvents(module, placeholderResponse) {
+  module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter(function (evt) {
+    if (evt.type === constants_defaultExport.EVENT_ENUM.playAfterRender || !evt.type) {
+      return evt;
+    }
+  }).forEach(function (listener) {
+    module.subscribe({
+      eventName: listener.eventName,
+      callback: module[listener.callback],
+      context: module,
+      eventPublisher: listener.eventPublisher,
+      once: listener.once
+    });
+  });
 
-	module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter(function (evt) {
-
-		if (evt.type === constants_defaultExport.EVENT_ENUM.playAfterRender || !evt.type) {
-
-			return evt;
-		}
-	}).forEach(function (listener) {
-
-		module.subscribe({
-			eventName: listener.eventName,
-			callback: module[listener.callback],
-			context: module,
-			eventPublisher: listener.eventPublisher,
-			once: listener.once
-		});
-	});
-
-	blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.listensToPlayAfterRenderSubscribed);
-	return blinx__callRender(module, placeholderResponse);
+  blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.listensToPlayAfterRenderSubscribed);
+  return blinx__callRender(module, placeholderResponse);
 };
 
 // STEP:4
@@ -1291,30 +1264,28 @@ var blinx__lockEvents = function _lockEvents(module, placeholderResponse) {
  * @private
  */
 var blinx__callRender = function _callRender(module, placeholderResponse) {
+  // if initOn is present exec below steps on initOn
+  // exec resolveRenderOn (if available)
+  // exec render after resolveRenderOn completes
+  // throw error is render and template are not provided
+  return new Promise(function (res, rej) {
+    // Null to be replaced with resolveRenderOn data
 
-	// if initOn is present exec below steps on initOn
-	// exec resolveRenderOn (if available)
-	// exec render after resolveRenderOn completes
-	// throw error is render and template are not provided
-	return new Promise(function (res, rej) {
-		// Null to be replaced with resolveRenderOn data
+    var compiledHTML = module[constants_defaultExport.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+    module.lifeCycleFlags.rendered = true;
+    _emitLifeCycleEvent(module, '_READY');
+    blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.renderCalled);
 
-		var compiledHTML = module[constants_defaultExport.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
-		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
-		blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.renderCalled);
+    if (module[constants_defaultExport.MODULE_EVENTS.onRenderComplete]) {
+      module[constants_defaultExport.MODULE_EVENTS.onRenderComplete]();
+      blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.onRenderCompleteCalled);
+    }
 
-		if (module[constants_defaultExport.MODULE_EVENTS.onRenderComplete]) {
+    res();
 
-			module[constants_defaultExport.MODULE_EVENTS.onRenderComplete]();
-			blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.onRenderCompleteCalled);
-		}
-
-		res();
-
-		// If there are any queued events , dequeue the events based on modules subscriptions
-		module.dequeueEvents();
-	});
+    // If there are any queued events , dequeue the events based on modules subscriptions
+    module.dequeueEvents();
+  });
 };
 
 /**
@@ -1334,37 +1305,31 @@ var blinx__callRender = function _callRender(module, placeholderResponse) {
  * @private
  */
 var _startExec = function _startExec(patchModules, promiseArr) {
+  var rootModules = patchModules.filter(function (module) {
+    return !module.meta.parent.id;
+  });
 
-	var rootModules = patchModules.filter(function (module) {
+  if (!rootModules.length) {
+    rootModules = [patchModules[0]];
+  }
 
-		return !module.meta.parent.id;
-	});
+  rootModules.forEach(function (rootModule) {
+    // Render this module
+    var moduleResolvePromise = new Promise(function (resolve, reject) {
+      _listenForInitOn(rootModule).then(function () {
+        if (rootModule.meta.children && rootModule.meta.children.length) {
+          rootModule.meta.children && rootModule.meta.children.forEach(function (module) {
+            if (!module.pointer.lifeCycleFlags.rendered) {
+              _startExec([module.pointer], promiseArr);
+            }
+          });
+        }
+        resolve(rootModule.meta.id);
+      });
+    });
 
-	if (!rootModules.length) {
-
-		rootModules = [patchModules[0]];
-	}
-
-	rootModules.forEach(function (rootModule) {
-
-		// Render this module
-		var moduleResolvePromise = new Promise(function (resolve, reject) {
-
-			_listenForInitOn(rootModule).then(function () {
-
-				if (rootModule.meta.children && rootModule.meta.children.length) {
-					rootModule.meta.children && rootModule.meta.children.forEach(function (module) {
-						if (!module.pointer.lifeCycleFlags.rendered) {
-							_startExec([module.pointer], promiseArr);
-						}
-					});
-				}
-				resolve(rootModule.meta.id);
-			});
-		});
-
-		promiseArr.push(moduleResolvePromise);
-	});
+    promiseArr.push(moduleResolvePromise);
+  });
 };
 
 /**
@@ -1397,35 +1362,31 @@ var _startExec = function _startExec(patchModules, promiseArr) {
  * @private
  */
 var blinx__registerSubscription = function _registerSubscription(module) {
+  module.instanceConfig.initOn && module.subscribe({
+    eventName: module.instanceConfig.initOn.eventName,
+    eventPublisher: module.instanceConfig.initOn.eventPublisher,
+    context: module.instanceConfig,
+    callback: utils_defaultExport.partial(blinx__callResolveRenderOn, module),
+    once: true
+  });
+  blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.initOnSubscribed);
 
-	module.instanceConfig.initOn && module.subscribe({
-		eventName: module.instanceConfig.initOn.eventName,
-		eventPublisher: module.instanceConfig.initOn.eventPublisher,
-		context: module.instanceConfig,
-		callback: utils_defaultExport.partial(blinx__callResolveRenderOn, module),
-		once: true
-	});
-	blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.initOnSubscribed);
+  module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter(function (evt) {
+    if (evt.type === constants_defaultExport.EVENT_ENUM.keepOn || evt.type === constants_defaultExport.EVENT_ENUM.replay) {
+      return evt;
+    }
+  }).forEach(function (listener) {
+    module.subscribe({
+      eventName: listener.eventName,
+      callback: module[listener.callback],
+      context: module,
+      eventPublisher: listener.eventPublisher,
+      once: listener.once,
+      type: listener.type
+    });
+  });
 
-	module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter(function (evt) {
-
-		if (evt.type === constants_defaultExport.EVENT_ENUM.keepOn || evt.type === constants_defaultExport.EVENT_ENUM.replay) {
-
-			return evt;
-		}
-	}).forEach(function (listener) {
-
-		module.subscribe({
-			eventName: listener.eventName,
-			callback: module[listener.callback],
-			context: module,
-			eventPublisher: listener.eventPublisher,
-			once: listener.once,
-			type: listener.type
-		});
-	});
-
-	blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.keepOnReplaySubscribed);
+  blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.keepOnReplaySubscribed);
 };
 
 /**
@@ -1455,102 +1416,90 @@ var blinx__registerSubscription = function _registerSubscription(module) {
  * @private
  */
 var blinx__registerModule = function _registerModule(moduleName, config) {
-	var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
-	var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
-	var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
-	var parent = arguments[5];
-	var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
+  var instance = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : config.module;
+  var instanceConfig = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : config.instanceConfig;
+  var patchModuleArray = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
+  var parent = arguments[5];
+  var parentMeta = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : parent && parent.meta;
 
+  if (typeof parent === 'string') {
+    parent = moduleS.find(function (module) {
+      return module.name === parent;
+    });
+    parentMeta = parent && parent.meta;
+  }
 
-	if (typeof parent === "string") {
-		parent = moduleS.find(function (module) {
+  var parentName = config.name ? config.name.split('.') : undefined,
+      foundModules = void 0;
 
-			return module.name === parent;
-		});
-		parentMeta = parent && parent.meta;
-	}
+  if (parent && parent.instanceConfig && parent.instanceConfig.modules && parent.instanceConfig.modules.length) {
+    var configFromParent = parent.instanceConfig.modules.filter(function (parentSibling) {
+      return parentSibling.moduleName === moduleName;
+    });
 
-	var parentName = config.name ? config.name.split(".") : undefined,
-	    foundModules = void 0;
+    if (configFromParent && configFromParent.length) {
+      var parentInstance = configFromParent[0].instanceConfig || {};
+      instanceConfig.placeholders = parentInstance.placeholders || instanceConfig.placeholders;
+      instanceConfig.listensTo = parentInstance.listensTo || instanceConfig.listensTo;
+    }
+  }
 
-	if (parent && parent.instanceConfig && parent.instanceConfig.modules && parent.instanceConfig.modules.length) {
+  if (instanceConfig.placeholders && instance && instance.config && instance.config.placeholders) {
+    instanceConfig.placeholders = __WEBPACK_IMPORTED_MODULE_1_lodash_fp__["merge"](instance.config.placeholders, instanceConfig.placeholders);
+  }
 
-		var configFromParent = parent.instanceConfig.modules.filter(function (parentSibling) {
-			return parentSibling.moduleName === moduleName;
-		});
+  if (this instanceof module_defaultExport) {
+    var parentId = this.getUniqueId();
+    foundModules = moduleS.filter(function (module) {
+      return module.meta.id === parentId;
+    });
+  } else if (!parent && parentName && parentName.length === 2) {
+    foundModules = moduleS.filter(function (module) {
+      return module.name === parentName[0];
+    });
+  }
 
-		if (configFromParent && configFromParent.length) {
-			var parentInstance = configFromParent[0].instanceConfig || {};
-			instanceConfig.placeholders = parentInstance.placeholders || instanceConfig.placeholders;
-			instanceConfig.listensTo = parentInstance.listensTo || instanceConfig.listensTo;
-		}
-	}
+  if (foundModules && foundModules.length) {
+    parent = foundModules[0];
+    parentMeta = parent.meta;
+  }
 
-	if (instanceConfig.placeholders && instance && instance.config && instance.config.placeholders) {
-		instanceConfig.placeholders = __WEBPACK_IMPORTED_MODULE_1_lodash_fp__["merge"](instance.config.placeholders, instanceConfig.placeholders);
-	}
+  var meta = {
+    id: utils_defaultExport.getNextUniqueId(),
+    parent: {
+      id: parentMeta && parentMeta.id ? parentMeta.id : undefined,
+      pointer: parent
+    },
+    children: [],
+    siblings: parentMeta ? [].concat(parentMeta.children) : []
+  };
 
-	if (this instanceof module_defaultExport) {
+  var moduleDetail = new module_defaultExport(config.name, moduleName, constants_defaultExport.lifeCycleFlags, instanceConfig, instance, meta);
 
-		var parentId = this.getUniqueId();
-		foundModules = moduleS.filter(function (module) {
+  // Store module
+  moduleS.insertInstance(moduleDetail);
+  patchModuleArray.push(moduleDetail);
+  blinx__registerSubscription(moduleDetail);
 
-			return module.meta.id === parentId;
-		});
-	} else if (!parent && parentName && parentName.length === 2) {
+  _emitLifeCycleEvent(moduleDetail, '_CREATED');
+  blinx__onBreath(moduleDetail, constants_defaultExport.onStatusChange_EVENTS.onCreate);
 
-		foundModules = moduleS.filter(function (module) {
+  if (parentMeta) {
+    meta.siblings = [].concat(parentMeta.children);
+    parentMeta.children.push({
+      id: meta.id,
+      pointer: moduleDetail
+    });
+  }
 
-			return module.name === parentName[0];
-		});
-	}
-
-	if (foundModules && foundModules.length) {
-
-		parent = foundModules[0];
-		parentMeta = parent.meta;
-	}
-
-	var meta = {
-		id: utils_defaultExport.getNextUniqueId(),
-		parent: {
-			id: parentMeta && parentMeta.id ? parentMeta.id : undefined,
-			pointer: parent
-		},
-		children: [],
-		siblings: parentMeta ? [].concat(parentMeta.children) : []
-	};
-
-	var moduleDetail = new module_defaultExport(config.name, moduleName, constants_defaultExport.lifeCycleFlags, instanceConfig, instance, meta);
-
-	// Store module
-	moduleS.insertInstance(moduleDetail);
-	patchModuleArray.push(moduleDetail);
-	blinx__registerSubscription(moduleDetail);
-
-	_emitLifeCycleEvent(moduleDetail, "_CREATED");
-	blinx__onBreath(moduleDetail, constants_defaultExport.onStatusChange_EVENTS.onCreate);
-
-	if (parentMeta) {
-
-		meta.siblings = [].concat(parentMeta.children);
-		parentMeta.children.push({
-			id: meta.id,
-			pointer: moduleDetail
-		});
-	}
-
-	// Has child modules
-	if (instance.config && instance.config.modules && instance.config.modules.length) {
-
-		instance.config.modules.forEach(function (childModule) {
-
-			_registerModule(childModule.moduleName, childModule, childModule.module, childModule.instanceConfig, patchModuleArray, moduleDetail);
-		});
-	} else {
-
-		return patchModuleArray;
-	}
+  // Has child modules
+  if (instance.config && instance.config.modules && instance.config.modules.length) {
+    instance.config.modules.forEach(function (childModule) {
+      _registerModule(childModule.moduleName, childModule, childModule.module, childModule.instanceConfig, patchModuleArray, moduleDetail);
+    });
+  } else {
+    return patchModuleArray;
+  }
 };
 
 /**
@@ -1567,59 +1516,57 @@ var blinx__registerModule = function _registerModule(moduleName, config) {
  * @returns {boolean} true when module gets deleted successfully
  */
 function destroyModuleInstance(module) {
-	var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+  var context = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
 
-	/// Remove module DOM and unsubscribe its events
-	if (Array.isArray(module)) {
-		var status = [];
-		module.forEach(function (singleModule) {
-			status.push(destroyModuleInstance(singleModule));
-		});
-		return status;
-	}
+  // / Remove module DOM and unsubscribe its events
+  if (Array.isArray(module)) {
+    var status = [];
+    module.forEach(function (singleModule) {
+      status.push(destroyModuleInstance(singleModule));
+    });
+    return status;
+  }
 
-	var moduleInstance = void 0;
-	if (typeof module === "string") {
-		moduleInstance = moduleS.findInstance(module);
-	} else if (module.meta) {
-		moduleInstance = moduleS.findInstance(module.meta.id);
-	} else {
-		moduleInstance = moduleS.findInstance(null, module.name);
-	}
+  var moduleInstance = void 0;
+  if (typeof module === 'string') {
+    moduleInstance = moduleS.findInstance(module);
+  } else if (module.meta) {
+    moduleInstance = moduleS.findInstance(module.meta.id);
+  } else {
+    moduleInstance = moduleS.findInstance(null, module.name);
+  }
 
-	moduleInstance.forEach(function (module) {
+  moduleInstance.forEach(function (module) {
+    // Call detroy of module
+    if (module[constants_defaultExport.MODULE_EVENTS.destroy]) {
+      module[constants_defaultExport.MODULE_EVENTS.destroy]();
+    }
+    var container = context.document.querySelector('#' + module.getUniqueId());
 
-		//Call detroy of module
-		if (module[constants_defaultExport.MODULE_EVENTS.destroy]) {
-			module[constants_defaultExport.MODULE_EVENTS.destroy]();
-		}
-		var container = context.document.querySelector("#" + module.getUniqueId());
+    // Remove element from DOM
+    if (container) {
+      container.remove();
+      container = null;
+    }
+    // Remove all subscriptions
+    var moduleSubscriptions = module.getAllSubscriptions();
+    moduleSubscriptions.forEach(function (subscription) {
+      module.unsubscribe(subscription.eventName, subscription.callback);
+    });
+    if (module.meta.children && module.meta.children.length) {
+      var childPointers = module.meta.children.map(function (child) {
+        return child.pointer;
+      });
 
-		// Remove element from DOM
-		if (container) {
-			container.remove();
-			container = null;
-		}
-		// Remove all subscriptions
-		var moduleSubscriptions = module.getAllSubscriptions();
-		moduleSubscriptions.forEach(function (subscription) {
-			module.unsubscribe(subscription.eventName, subscription.callback);
-		});
-		if (module.meta.children && module.meta.children.length) {
+      module.meta.children = [];
 
-			var childPointers = module.meta.children.map(function (child) {
-				return child.pointer;
-			});
-
-			module.meta.children = [];
-
-			childPointers.forEach(function (childNode) {
-				destroyModuleInstance(childNode);
-			});
-		}
-		moduleS.deleteInstance(module.meta.id);
-	});
-	return true;
+      childPointers.forEach(function (childNode) {
+        destroyModuleInstance(childNode);
+      });
+    }
+    moduleS.deleteInstance(module.meta.id);
+  });
+  return true;
 }
 
 /**
@@ -1638,28 +1585,28 @@ function destroyModuleInstance(module) {
  * @returns {Promise|undefined} Resolves when all the modules are rendered.
  */
 function createInstance(config, parentName) {
-	config = __WEBPACK_IMPORTED_MODULE_1_lodash_fp__["merge"]({}, config);
+  config = __WEBPACK_IMPORTED_MODULE_1_lodash_fp__["merge"]({}, config);
 
-	if (!utils_defaultExport.configValidator(config)) return;
+  if (!utils_defaultExport.configValidator(config)) return;
 
-	var modulesToDestory = moduleS.filter(function (moduleInstance) {
-		return moduleInstance.instanceConfig.container === config.instanceConfig.container;
-	});
+  var modulesToDestory = moduleS.filter(function (moduleInstance) {
+    return moduleInstance.instanceConfig.container === config.instanceConfig.container;
+  });
 
-	modulesToDestory.forEach(function (moduleInstance) {
-		destroyModuleInstance(moduleInstance);
-	});
+  modulesToDestory.forEach(function (moduleInstance) {
+    destroyModuleInstance(moduleInstance);
+  });
 
-	var moduleResolvePromiseArr = [],
-	    promise = void 0,
-	    patchModules = [];
+  var moduleResolvePromiseArr = [],
+      promise = void 0,
+      patchModules = [];
 
-	blinx__registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
-	_startExec.call(this, patchModules, moduleResolvePromiseArr);
+  blinx__registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
+  _startExec.call(this, patchModules, moduleResolvePromiseArr);
 
-	return new Promise(function (res, rej) {
-		Promise.all(moduleResolvePromiseArr).then(res).catch(rej);
-	});
+  return new Promise(function (res, rej) {
+    Promise.all(moduleResolvePromiseArr).then(res).catch(rej);
+  });
 }
 
 /**
@@ -1678,7 +1625,7 @@ function createInstance(config, parentName) {
  * @param middleware
  */
 function use(middleware) {
-	middleWareFns.push(middleware);
+  middleWareFns.push(middleware);
 }
 /**
  * Deprecating destroyModuleInstance for name consistency
@@ -1690,14 +1637,14 @@ var destroyInstance = destroyModuleInstance;
  * used for Development tool for chrome
  */
 devtool_defaultExport.attachListener(function () {
-	return moduleS;
+  return moduleS;
 });
 
 /* harmony default export */ var blinx_defaultExport = ({
-	createInstance: createInstance,
-	destroyInstance: destroyInstance,
-	destroyModuleInstance: destroyModuleInstance, // Deprecated
-	use: use
+  createInstance: createInstance,
+  destroyInstance: destroyInstance,
+  destroyModuleInstance: destroyModuleInstance, // Deprecated
+  use: use
 });
 // CONCATENATED MODULE: ./src/index.js
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PubSubHelper", function() { return PubSubHelper; });

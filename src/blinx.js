@@ -1,4 +1,4 @@
-/**This is the major framework file.
+/** This is the major framework file.
  * @exports {
  * 	createInstance: creates a new instance of the module.
  * 	destroyModuleInstance: destroys the module instance,
@@ -7,12 +7,12 @@
  * }
  */
 
-import Utils from "./helpers/utils";
+import Utils from './helpers/utils';
 import {merge} from 'lodash/fp';
-import Module from "./interfaces/module.js";
-import {moduleS, middleWareFns} from "./interfaces/store";
-import CONSTANTS from "./constants";
-import Devtool from "./devtool";
+import Module from './interfaces/module.js';
+import {moduleS, middleWareFns} from './interfaces/store';
+import CONSTANTS from './constants';
+import Devtool from './devtool';
 
 /**
  *
@@ -20,8 +20,7 @@ import Devtool from "./devtool";
  * @param eventName [string]
  * @private
  */
-let _onBreath = function (module, eventName) {
-
+const _onBreath = function (module, eventName) {
 	if (module[CONSTANTS.MODULE_EVENTS.onStatusChange]) {
 		module[CONSTANTS.MODULE_EVENTS.onStatusChange](eventName);
 	}
@@ -33,10 +32,9 @@ let _onBreath = function (module, eventName) {
  * @param eventName [string]
  * @private
  */
-let _emitLifeCycleEvent = function (moduleDetail, eventName) {
-
+const _emitLifeCycleEvent = function (moduleDetail, eventName) {
 	moduleDetail.publish(`${moduleDetail.getModuleName()}${eventName}`, {
-		moduleInstanceId: moduleDetail.getUniqueId()
+		moduleInstanceId: moduleDetail.getUniqueId(),
 	});
 };
 
@@ -48,15 +46,12 @@ let _emitLifeCycleEvent = function (moduleDetail, eventName) {
  * @returns {Promise}
  * @private
  */
-let _listenForInitOn = function (module) {
-
+const _listenForInitOn = function (module) {
 	if (module.instanceConfig.initOn || module.lifeCycleFlags.rendered) {
-
 		return Promise.resolve(module.path);
-	} else {
-
-		return _callResolveRenderOn(module);
 	}
+
+	return _callResolveRenderOn(module);
 };
 
 // STEP:2
@@ -70,32 +65,26 @@ let _listenForInitOn = function (module) {
  * @private
  */
 let _callResolveRenderOn = function (module, data) {
-
 	Module.createModuleArena(module);
 
 	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
-
-		let moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
-		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === "function") {
-
-			let onPromiseComplete = (res)=> {
+		const moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
+		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === 'function') {
+			const onPromiseComplete = (res) => {
 				module.lifeCycleFlags.preRenderResolved = true;
 				_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 				return _lockEvents(module, res);
 			};
 
 			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
-		} else {
-
-			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
-			return _lockEvents(module, moduleResoved);
 		}
 
-	} else {
-
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
-		return _lockEvents(module, data);
+		return _lockEvents(module, moduleResoved);
 	}
+
+	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
+	return _lockEvents(module, data);
 };
 
 // STEP:3 [Hot events]
@@ -106,21 +95,17 @@ let _callResolveRenderOn = function (module, data) {
  * @private
  */
 let _lockEvents = function (module, placeholderResponse) {
-
-	module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter((evt)=> {
-
+	module.instanceConfig.listensTo && module.instanceConfig.listensTo.length && module.instanceConfig.listensTo.filter((evt) => {
 		if (evt.type === CONSTANTS.EVENT_ENUM.playAfterRender || !evt.type) {
-
 			return evt;
 		}
 	}).forEach((listener) => {
-
 		module.subscribe({
 			eventName: listener.eventName,
 			callback: module[listener.callback],
 			context: module,
 			eventPublisher: listener.eventPublisher,
-			once: listener.once
+			once: listener.once,
 		});
 	});
 
@@ -138,7 +123,6 @@ let _lockEvents = function (module, placeholderResponse) {
  * @private
  */
 let _callRender = function (module, placeholderResponse) {
-
 	// if initOn is present exec below steps on initOn
 	// exec resolveRenderOn (if available)
 	// exec render after resolveRenderOn completes
@@ -146,13 +130,12 @@ let _callRender = function (module, placeholderResponse) {
 	return new Promise((res, rej) => {
 		// Null to be replaced with resolveRenderOn data
 
-		let compiledHTML = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
+		const compiledHTML             = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
 		module.lifeCycleFlags.rendered = true;
-		_emitLifeCycleEvent(module, "_READY");
+		_emitLifeCycleEvent(module, '_READY');
 		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
-
 			module[CONSTANTS.MODULE_EVENTS.onRenderComplete]();
 			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
 		}
@@ -180,36 +163,28 @@ let _callRender = function (module, placeholderResponse) {
  * @param promiseArr {Array} the array of promise objects
  * @private
  */
-let _startExec = function (patchModules, promiseArr) {
-
-	let rootModules = patchModules.filter((module) => {
-
-		return !module.meta.parent.id;
-	});
+const _startExec = function (patchModules, promiseArr) {
+	let rootModules = patchModules.filter(module => !module.meta.parent.id);
 
 	if (!rootModules.length) {
-
 		rootModules = [patchModules[0]];
 	}
 
 	rootModules.forEach((rootModule) => {
-
 		// Render this module
-		let moduleResolvePromise = new Promise(function (resolve, reject) {
-
+		const moduleResolvePromise = new Promise(((resolve, reject) => {
 			_listenForInitOn(rootModule)
 				.then(() => {
-
-					if(rootModule.meta.children && rootModule.meta.children.length) {
+					if (rootModule.meta.children && rootModule.meta.children.length) {
 						rootModule.meta.children && rootModule.meta.children.forEach((module) => {
-							if(!module.pointer.lifeCycleFlags.rendered) {
+							if (!module.pointer.lifeCycleFlags.rendered) {
 								_startExec([module.pointer], promiseArr);
 							}
-						})
+						});
 					}
 					resolve(rootModule.meta.id);
 				});
-		});
+		}));
 
 		promiseArr.push(moduleResolvePromise);
 	});
@@ -244,35 +219,31 @@ let _startExec = function (patchModules, promiseArr) {
  * @returns {*}
  * @private
  */
-let _registerSubscription = function (module) {
-
+const _registerSubscription = function (module) {
 	module.instanceConfig.initOn && module.subscribe({
 		eventName: module.instanceConfig.initOn.eventName,
 		eventPublisher: module.instanceConfig.initOn.eventPublisher,
 		context: module.instanceConfig,
 		callback: Utils.partial(_callResolveRenderOn, module),
-		once: true
+		once: true,
 	});
 	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.initOnSubscribed);
 
 	module.instanceConfig.listensTo &&
 	module.instanceConfig.listensTo.length &&
-	module.instanceConfig.listensTo.filter((evt)=> {
-
+	module.instanceConfig.listensTo.filter((evt) => {
 		if (evt.type === CONSTANTS.EVENT_ENUM.keepOn || evt.type === CONSTANTS.EVENT_ENUM.replay) {
-
 			return evt;
 		}
 	})
 		.forEach((listener) => {
-
 			module.subscribe({
 				eventName: listener.eventName,
 				callback: module[listener.callback],
 				context: module,
 				eventPublisher: listener.eventPublisher,
 				once: listener.once,
-				type: listener.type
+				type: listener.type,
 			});
 		});
 
@@ -305,95 +276,75 @@ let _registerSubscription = function (module) {
  * @param {String}[path=""]
  * @private
  */
-let _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent && parent.meta) {
-
-	if(typeof parent === "string"){
-		parent = moduleS.find(function (module) {
-
-			return module.name === parent;
-		});
+const _registerModule = function (moduleName, config, instance = config.module, instanceConfig = config.instanceConfig, patchModuleArray = [], parent, parentMeta = parent && parent.meta) {
+	if (typeof parent === 'string') {
+		parent     = moduleS.find(module => module.name === parent);
 		parentMeta = parent && parent.meta;
 	}
 
-	let parentName = config.name ? config.name.split(".") : undefined,
+	let parentName = config.name ? config.name.split('.') : undefined,
 		foundModules;
 
-	if(parent && parent.instanceConfig && parent.instanceConfig.modules && parent.instanceConfig.modules.length) {
+	if (parent && parent.instanceConfig && parent.instanceConfig.modules && parent.instanceConfig.modules.length) {
+		const configFromParent = parent.instanceConfig.modules.filter(parentSibling => parentSibling.moduleName === moduleName);
 
-		let configFromParent = parent.instanceConfig.modules.filter(function(parentSibling) {
-			return parentSibling.moduleName === moduleName;
-		});
-
-		if(configFromParent && configFromParent.length) {
-			let parentInstance = configFromParent[0].instanceConfig || {};
+		if (configFromParent && configFromParent.length) {
+			const parentInstance        = configFromParent[0].instanceConfig || {};
 			instanceConfig.placeholders = parentInstance.placeholders || instanceConfig.placeholders;
-			instanceConfig.listensTo = parentInstance.listensTo || instanceConfig.listensTo;
+			instanceConfig.listensTo    = parentInstance.listensTo || instanceConfig.listensTo;
 		}
 	}
 
-	if(instanceConfig.placeholders && instance && instance.config && instance.config.placeholders){
+	if (instanceConfig.placeholders && instance && instance.config && instance.config.placeholders) {
 		instanceConfig.placeholders = merge(instance.config.placeholders, instanceConfig.placeholders);
 	}
 
 	if (this instanceof Module) {
-
-		let parentId = this.getUniqueId();
-		foundModules = moduleS.filter((module) => {
-
-			return module.meta.id === parentId;
-		});
+		const parentId = this.getUniqueId();
+		foundModules   = moduleS.filter(module => module.meta.id === parentId);
 	} else if (!parent && parentName && parentName.length === 2) {
-
-		foundModules = moduleS.filter((module) => {
-
-			return module.name === parentName[0];
-		});
+		foundModules = moduleS.filter(module => module.name === parentName[0]);
 	}
 
 	if (foundModules && foundModules.length) {
-
-		parent = foundModules[0];
+		parent     = foundModules[0];
 		parentMeta = parent.meta;
 	}
 
-	let meta = {
+	const meta = {
 		id: Utils.getNextUniqueId(),
 		parent: {
 			id: parentMeta && parentMeta.id ? parentMeta.id : undefined,
-			pointer: parent
+			pointer: parent,
 		},
 		children: [],
-		siblings: parentMeta ? [].concat(parentMeta.children) : []
+		siblings: parentMeta ? [].concat(parentMeta.children) : [],
 	};
 
-	let moduleDetail = new Module(config.name, moduleName, CONSTANTS.lifeCycleFlags, instanceConfig, instance, meta);
+	const moduleDetail = new Module(config.name, moduleName, CONSTANTS.lifeCycleFlags, instanceConfig, instance, meta);
 
 	// Store module
 	moduleS.insertInstance(moduleDetail);
 	patchModuleArray.push(moduleDetail);
 	_registerSubscription(moduleDetail);
 
-	_emitLifeCycleEvent(moduleDetail, "_CREATED");
+	_emitLifeCycleEvent(moduleDetail, '_CREATED');
 	_onBreath(moduleDetail, CONSTANTS.onStatusChange_EVENTS.onCreate);
 
 	if (parentMeta) {
-
 		meta.siblings = [].concat(parentMeta.children);
 		parentMeta.children.push({
 			id: meta.id,
-			pointer: moduleDetail
+			pointer: moduleDetail,
 		});
 	}
 
 	// Has child modules
 	if (instance.config && instance.config.modules && instance.config.modules.length) {
-
 		instance.config.modules.forEach((childModule) => {
-
 			_registerModule(childModule.moduleName, childModule, childModule.module, childModule.instanceConfig, patchModuleArray, moduleDetail);
 		});
 	} else {
-
 		return patchModuleArray;
 	}
 };
@@ -412,51 +363,47 @@ let _registerModule = function (moduleName, config, instance = config.module, in
  * @returns {boolean} true when module gets deleted successfully
  */
 export function destroyModuleInstance(module, context = window) {
-	/// Remove module DOM and unsubscribe its events
-	if(Array.isArray(module)) {
-		let status = [];
-		module.forEach(function(singleModule) {
+	// / Remove module DOM and unsubscribe its events
+	if (Array.isArray(module)) {
+		const status = [];
+		module.forEach((singleModule) => {
 			status.push(destroyModuleInstance(singleModule));
 		});
 		return status;
 	}
 
 	let moduleInstance;
-	if(typeof module === "string"){
+	if (typeof module === 'string') {
 		moduleInstance = moduleS.findInstance(module);
-	} else if(module.meta){
+	} else if (module.meta) {
 		moduleInstance = moduleS.findInstance(module.meta.id);
 	} else {
 		moduleInstance = moduleS.findInstance(null, module.name);
 	}
 
-	moduleInstance.forEach((module)=> {
-
-		//Call detroy of module
-		if(module[CONSTANTS.MODULE_EVENTS.destroy]){
+	moduleInstance.forEach((module) => {
+		// Call detroy of module
+		if (module[CONSTANTS.MODULE_EVENTS.destroy]) {
 			module[CONSTANTS.MODULE_EVENTS.destroy]();
 		}
 		let container = context.document.querySelector(`#${module.getUniqueId()}`);
 
 		// Remove element from DOM
-		if(container){
+		if (container) {
 			container.remove();
 			container = null;
 		}
 		// Remove all subscriptions
-		let moduleSubscriptions = module.getAllSubscriptions();
-		moduleSubscriptions.forEach(function (subscription) {
+		const moduleSubscriptions = module.getAllSubscriptions();
+		moduleSubscriptions.forEach((subscription) => {
 			module.unsubscribe(subscription.eventName, subscription.callback);
 		});
-		if(module.meta.children && module.meta.children.length){
-
-			let childPointers = module.meta.children.map((child)=>{
-				return child.pointer;
-			});
+		if (module.meta.children && module.meta.children.length) {
+			const childPointers = module.meta.children.map(child => child.pointer);
 
 			module.meta.children = [];
 
-			childPointers.forEach((childNode)=>{
+			childPointers.forEach((childNode) => {
 				destroyModuleInstance(childNode);
 			});
 		}
@@ -483,25 +430,23 @@ export function destroyModuleInstance(module, context = window) {
 export function createInstance(config, parentName) {
 	config = merge({}, config);
 
-	if(!Utils.configValidator(config)) return;
+	if (!Utils.configValidator(config)) return;
 
-	let modulesToDestory = moduleS.filter((moduleInstance)=>{
-		return moduleInstance.instanceConfig.container === config.instanceConfig.container;
-	});
+	const modulesToDestory = moduleS.filter(moduleInstance => moduleInstance.instanceConfig.container === config.instanceConfig.container);
 
-	modulesToDestory.forEach((moduleInstance)=>{
+	modulesToDestory.forEach((moduleInstance) => {
 		destroyModuleInstance(moduleInstance);
 	});
 
 	let moduleResolvePromiseArr = [],
 		promise,
-		patchModules = [];
+		patchModules            = [];
 
 	_registerModule.call(this, config.moduleName, config, config.module, config.instanceConfig, patchModules, parentName);
 	_startExec.call(this, patchModules, moduleResolvePromiseArr);
 
-	return new Promise((res, rej)=> {
-		Promise.all(moduleResolvePromiseArr).then(res).catch(rej)
+	return new Promise((res, rej) => {
+		Promise.all(moduleResolvePromiseArr).then(res).catch(rej);
 	});
 }
 
@@ -527,18 +472,16 @@ export function use(middleware) {
  * Deprecating destroyModuleInstance for name consistency
  * @type {destroyModuleInstance}
  */
-export let destroyInstance = destroyModuleInstance;
+export const destroyInstance = destroyModuleInstance;
 
 /**
  * used for Development tool for chrome
  */
-Devtool.attachListener(function(){
-	return moduleS;
-});
+Devtool.attachListener(() => moduleS);
 
 export default {
 	createInstance,
 	destroyInstance,
 	destroyModuleInstance, // Deprecated
-	use
+	use,
 };
