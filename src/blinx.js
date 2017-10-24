@@ -8,7 +8,7 @@
  */
 
 import Utils from "./helpers/utils";
-import merge from 'lodash.merge';
+import {merge} from 'lodash/fp';
 import Module from "./interfaces/module.js";
 import {moduleS, middleWareFns} from "./interfaces/store";
 import CONSTANTS from "./constants";

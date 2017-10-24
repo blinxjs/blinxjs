@@ -1,6 +1,7 @@
 'use strict';
 
 var webpack = require('webpack');
+
 var LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 
 var env = process.env.NODE_ENV;
