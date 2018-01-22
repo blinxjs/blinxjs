@@ -129,15 +129,14 @@ let _callRender = function (module, placeholderResponse) {
 	// throw error is render and template are not provided
 	return new Promise((res, rej) => {
 		// Null to be replaced with resolveRenderOn data
-
+		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
 		const compiledHTML             = module[CONSTANTS.MODULE_EVENTS.render](placeholderResponse, compiledHTML);
 		module.lifeCycleFlags.rendered = true;
 		_emitLifeCycleEvent(module, '_READY');
-		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.renderCalled);
+		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
 
 		if (module[CONSTANTS.MODULE_EVENTS.onRenderComplete]) {
 			module[CONSTANTS.MODULE_EVENTS.onRenderComplete]();
-			_onBreath(module, CONSTANTS.onStatusChange_EVENTS.onRenderCompleteCalled);
 		}
 
 		res();
