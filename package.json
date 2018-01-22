@@ -1,6 +1,6 @@
 {
   "name": "blinx",
-  "version": "0.9.72",
+  "version": "1.0.0",
   "description": "The Scalable JavaScript Application Framework",
   "main": "lib/index.js",
   "directories": {

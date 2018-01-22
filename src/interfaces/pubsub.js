@@ -91,16 +91,18 @@ class PubSub {
 		let subscriptionsForEvent  = subscriptions[eventName],
 			remainingSubscriptions = [];
 
-		if (!subscriptionsForEvent) {
-			return;
-		}
-
 		publishLogger(eventName, {
 			eventName,
 			message,
 			publisher,
 			subscription: subscriptionsForEvent,
 		});
+
+		if (!subscriptionsForEvent) {
+			return;
+		}
+
+
 
 		// If any of the subscription is of type Replay
 		// Push the message to eventQ
