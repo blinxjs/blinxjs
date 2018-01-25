@@ -1207,24 +1207,19 @@ var _listenForInitOn = function _listenForInitOn(module) {
  */
 var blinx__callResolveRenderOn = function _callResolveRenderOn(module, data) {
 	module_defaultExport.createModuleArena(module);
-
+	blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
 	if (module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn]) {
 		var moduleResoved = module[constants_defaultExport.MODULE_EVENTS.resolveRenderOn](data);
 		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === 'function') {
 			var onPromiseComplete = function onPromiseComplete(res) {
 				module.lifeCycleFlags.preRenderResolved = true;
-				blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
 				return blinx__lockEvents(module, res);
 			};
-
 			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
 		}
-
-		blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
 		return blinx__lockEvents(module, moduleResoved);
 	}
 
-	blinx__onBreath(module, constants_defaultExport.onStatusChange_EVENTS.resolveRenderOnCalled);
 	return blinx__lockEvents(module, data);
 };
 

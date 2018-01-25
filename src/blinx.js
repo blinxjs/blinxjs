@@ -66,24 +66,19 @@ const _listenForInitOn = function (module) {
  */
 let _callResolveRenderOn = function (module, data) {
 	Module.createModuleArena(module);
-
+	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 	if (module[CONSTANTS.MODULE_EVENTS.resolveRenderOn]) {
 		const moduleResoved = module[CONSTANTS.MODULE_EVENTS.resolveRenderOn](data);
 		if (moduleResoved && moduleResoved.then && typeof moduleResoved.then === 'function') {
 			const onPromiseComplete = (res) => {
 				module.lifeCycleFlags.preRenderResolved = true;
-				_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 				return _lockEvents(module, res);
 			};
-
 			return moduleResoved.then(onPromiseComplete).catch(onPromiseComplete);
 		}
-
-		_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 		return _lockEvents(module, moduleResoved);
 	}
 
-	_onBreath(module, CONSTANTS.onStatusChange_EVENTS.resolveRenderOnCalled);
 	return _lockEvents(module, data);
 };
 
